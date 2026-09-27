@@ -282,17 +282,23 @@ public final class AudioVoiceEvaluatorService: NSObject, ObservableObject, AVAud
         audioLevel = 0.0
     }
     
-    public func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        isPlayingBack = false
+    nonisolated public func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        Task { @MainActor in
+            self.isPlayingBack = false
+        }
     }
     
-    public func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
-        AppLogger.shared.info(tag: "Audio", message: "AVAudioRecorder hoàn tất thu âm (thành công: \(flag)).")
+    nonisolated public func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+        Task { @MainActor in
+            AppLogger.shared.info(tag: "Audio", message: "AVAudioRecorder hoàn tất thu âm (thành công: \(flag)).")
+        }
     }
     
-    public func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: Error?) {
+    nonisolated public func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: Error?) {
         if let error = error {
-            AppLogger.shared.error(tag: "Audio", message: "Lỗi mã hóa audio: \(error.localizedDescription)")
+            Task { @MainActor in
+                AppLogger.shared.error(tag: "Audio", message: "Lỗi mã hóa audio: \(error.localizedDescription)")
+            }
         }
     }
 }

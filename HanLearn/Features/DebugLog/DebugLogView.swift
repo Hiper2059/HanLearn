@@ -9,6 +9,7 @@
 
 import SwiftUI
 import AVFoundation
+import SwiftData
 
 public struct DebugLogView: View {
     @Environment(\.dismiss) private var dismiss
