@@ -281,6 +281,23 @@ public struct StrokeCanvasView: View {
                                     .foregroundColor(HanTheme.silkGold)
                                     .padding(.top, 4)
                             }
+                            
+                            if voiceEvaluator.isPermissionDenied {
+                                Button(action: {
+                                    voiceEvaluator.openSettings()
+                                }) {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "gearshape.fill")
+                                        Text("Mở Cài Đặt iPhone Để Bật Micro")
+                                    }
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(.black)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(HanTheme.silkGold)
+                                    .cornerRadius(8)
+                                }
+                            }
                         }
                         .padding(16)
                         .frame(maxWidth: .infinity)

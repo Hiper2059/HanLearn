@@ -155,34 +155,41 @@ struct RootView: View {
     }
 }
 
-// MARK: - Main 5-Tab Navigation (Golden Senior iOS Architecture)
+// MARK: - Main 5-Tab Navigation (Duolingo & HelloChinese Architecture)
 struct MainTabView: View {
+    @State private var selectedTab: Int = 1
+    
     var body: some View {
-        TabView {
-            HomeView()
+        TabView(selection: $selectedTab) {
+            HSKHubView()
                 .tabItem {
-                    Label("Hôm nay", systemImage: "house.fill")
+                    Label("Lộ Trình", systemImage: "map.fill")
                 }
+                .tag(1)
             
             PracticeZoneView()
                 .tabItem {
                     Label("Tự Check", systemImage: "checkmark.seal.fill")
                 }
+                .tag(2)
             
-            ReviewQueueView()
+            HomeView()
                 .tabItem {
-                    Label("Ôn tập", systemImage: "rectangle.stack.fill")
+                    Label("Nhiệm Vụ", systemImage: "flame.fill")
                 }
+                .tag(3)
             
             ExamAndMistakeView()
                 .tabItem {
                     Label("Sổ Lỗi & Thi", systemImage: "bookmark.fill")
                 }
+                .tag(4)
             
             ProgressAndBackupView()
                 .tabItem {
-                    Label("Tiến độ", systemImage: "chart.bar.fill")
+                    Label("Hồ Sơ & Logs", systemImage: "person.crop.circle.fill")
                 }
+                .tag(5)
         }
         .tint(HanTheme.jadeGreen)
     }

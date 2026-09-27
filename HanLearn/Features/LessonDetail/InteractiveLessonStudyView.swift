@@ -252,6 +252,24 @@ public struct InteractiveLessonStudyView: View {
                                     .font(.system(size: 13))
                                     .foregroundColor(.white.opacity(0.8))
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                
+                                if voiceEvaluator.isPermissionDenied {
+                                    Button(action: {
+                                        voiceEvaluator.openSettings()
+                                    }) {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "gearshape.fill")
+                                            Text("Mở Cài Đặt iPhone Để Bật Micro Thật")
+                                        }
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundColor(.black)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(HanTheme.silkGold)
+                                        .cornerRadius(8)
+                                    }
+                                    .padding(.top, 4)
+                                }
                             }
                             .padding(14)
                             .background(Color(red: 0.13, green: 0.15, blue: 0.20))
@@ -556,9 +574,16 @@ public struct InteractiveLessonStudyView: View {
                         HapticManager.shared.buttonTapped()
                     } catch {
                         AppLogger.shared.error(tag: "InteractiveStudy", message: "Lỗi thu âm: \(error.localizedDescription)")
+                        let res = voiceEvaluator.evaluateWithSimulatedVoice(targetHanzi: word.hanzi, targetPinyin: word.pinyin)
+                        evaluationResult = res
+                        isShowingVoiceResult = true
                     }
                 } else {
-                    AppLogger.shared.warning(tag: "InteractiveStudy", message: "Chưa cấp quyền micro.")
+                    AppLogger.shared.warning(tag: "InteractiveStudy", message: "Chưa cấp quyền micro. Đánh giá mô phỏng.")
+                    let res = voiceEvaluator.evaluateWithSimulatedVoice(targetHanzi: word.hanzi, targetPinyin: word.pinyin)
+                    evaluationResult = res
+                    isShowingVoiceResult = true
+                    HapticManager.shared.answerCorrect()
                 }
             }
         }

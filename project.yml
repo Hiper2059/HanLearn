@@ -24,6 +24,8 @@ targets:
       PRODUCT_BUNDLE_IDENTIFIER: com.hanlearn.app
       GENERATE_INFOPLIST_FILE: NO
       INFOPLIST_FILE: HanLearn/Info.plist
+      INFOPLIST_KEY_UILaunchStoryboardName: LaunchScreen
+      INFOPLIST_KEY_UIRequiresFullScreen: YES
 
 schemes:
   HanLearn:

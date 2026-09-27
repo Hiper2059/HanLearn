@@ -22,6 +22,9 @@ public struct HomeView: View {
     @State private var showingPracticeZone: Bool = false
     @State private var showingExamAndMistakes: Bool = false
     @State private var showingDebugLog: Bool = false
+    @State private var showingVoicePractice: Bool = false
+    @State private var showingReview: Bool = false
+    @State private var selectedWordForStroke: HSKWord?
     
     private var progress: UserProgress {
         userProgressList.first ?? UserProgress()
@@ -133,6 +136,18 @@ public struct HomeView: View {
             }
             .sheet(isPresented: $showingExamAndMistakes) {
                 ExamAndMistakeView()
+            }
+            .sheet(isPresented: $showingVoicePractice) {
+                VoiceDialogueView(
+                    targetHanzi: allWords.first?.exampleSentenceHanzi.isEmpty == false ? allWords.first!.exampleSentenceHanzi : "你好，很高兴认识你！",
+                    targetPinyin: allWords.first?.exampleSentencePinyin.isEmpty == false ? allWords.first!.exampleSentencePinyin : "Nǐ hǎo, hěn gāoxìng rènshi nǐ!"
+                )
+            }
+            .sheet(item: $selectedWordForStroke) { word in
+                StrokeCanvasView(word: word)
+            }
+            .sheet(isPresented: $showingReview) {
+                ReviewQueueView()
             }
             .onAppear {
                 generateTodaysTasks()
@@ -423,9 +438,29 @@ public struct HomeView: View {
                 ForEach(tasksForToday) { task in
                     DailyTaskRow(task: task, onComplete: {
                         updateStudyDay()
+                    }, onTap: {
+                        handleTaskTap(task)
                     })
                 }
             }
+        }
+    }
+    
+    private func handleTaskTap(_ task: DailyTask) {
+        HapticManager.shared.buttonTapped()
+        switch task.category {
+        case .speaking, .listening:
+            showingVoicePractice = true
+        case .characters, .pinyin:
+            if let first = allWords.first {
+                selectedWordForStroke = first
+            } else {
+                showingPracticeZone = true
+            }
+        case .review:
+            showingReview = true
+        case .vocabulary, .grammar, .journal:
+            showingPracticeZone = true
         }
     }
     

@@ -26,11 +26,8 @@
     <string>HanLearn cần quyền nhận diện giọng nói để phân tích phát âm của bạn.</string>
     <key>UILaunchStoryboardName</key>
     <string>LaunchScreen</string>
-    <key>UILaunchScreen</key>
-    <dict>
-        <key>UIImageRespectsSafeAreaInsets</key>
-        <false/>
-    </dict>
+    <key>UIRequiresFullScreen</key>
+    <true/>
     <key>UISupportedInterfaceOrientations</key>
     <array>
         <string>UIInterfaceOrientationPortrait</string>

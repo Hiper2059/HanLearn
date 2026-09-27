@@ -20,7 +20,8 @@ public struct PracticeZoneView: View {
     
     public enum PracticeMode: String, CaseIterable {
         case dictation = "Nghe Chép"
-        case sentenceBuilder = "Sắp Xếp Câu"
+        case sentenceBuilder = "Ghép Câu"
+        case speaking = "Luyện Nói AI"
         case reading = "Bài Đọc"
     }
     
@@ -34,7 +35,7 @@ public struct PracticeZoneView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Thanh chọn chế độ 3 nút
+                    // Thanh chọn chế độ 4 nút
                     modeSelectorBar
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
@@ -46,6 +47,8 @@ public struct PracticeZoneView: View {
                                 AutoDictationModule()
                             case .sentenceBuilder:
                                 SentenceBuilderModule()
+                            case .speaking:
+                                VoiceSpeakingCheckModule()
                             case .reading:
                                 ReadingTranslateModule()
                             }
@@ -728,6 +731,353 @@ struct ReadingTranslateModule: View {
             .fill(Color(red: 0.10, green: 0.13, blue: 0.18))
             .overlay(
                 RoundedRectangle(cornerRadius: 20)
+                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+            )
+    }
+}
+
+// MARK: - 4. VOICE SPEAKING CHECK MODULE (Luyện Nói AI & Chấm Điểm 4 Thanh Điệu)
+
+struct VoiceSpeakingCheckModule: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var userProgressList: [UserProgress]
+    @StateObject private var voiceEvaluator = AudioVoiceEvaluatorService.shared
+    
+    struct SpeakingItem: Identifiable {
+        var id: String { hanzi }
+        let hanzi: String
+        let pinyin: String
+        let meaning: String
+        let hskLevel: Int
+    }
+    
+    private let speakingItems: [SpeakingItem] = [
+        SpeakingItem(hanzi: "你好，很高兴认识你！", pinyin: "Nǐ hǎo, hěn gāoxìng rènshi nǐ!", meaning: "Xin chào, rất vui được làm quen với bạn!", hskLevel: 1),
+        SpeakingItem(hanzi: "我想买一个苹果。", pinyin: "Wǒ xiǎng mǎi yí gè píngguǒ.", meaning: "Tôi muốn mua một quả táo.", hskLevel: 1),
+        SpeakingItem(hanzi: "今天的天气非常晴朗。", pinyin: "Jīntiān de tiānqì fēicháng qínglǎng.", meaning: "Thời tiết hôm nay vô cùng trong lành.", hskLevel: 1),
+        SpeakingItem(hanzi: "这个衣服多少钱一件？", pinyin: "Zhège yīfu duōshao qián yí jiàn?", meaning: "Bộ quần áo này bao nhiêu tiền một chiếc?", hskLevel: 2),
+        SpeakingItem(hanzi: "明天我们一起去图书馆吧。", pinyin: "Míngtiān wǒmen yìqǐ qù túshūguǎn ba.", meaning: "Ngày mai chúng ta cùng nhau đi thư viện nhé.", hskLevel: 2),
+        SpeakingItem(hanzi: "虽然汉语很难，但我会坚持学习。", pinyin: "Suīrán hànyǔ hěn nán, dàn wǒ huì jiānchí xuéxí.", meaning: "Tuy tiếng Trung rất khó, nhưng tôi sẽ kiên trì học tập.", hskLevel: 3),
+        SpeakingItem(hanzi: "祝你生日快乐，工作顺利！", pinyin: "Zhù nǐ shēngrì kuàilè, gōngzuò shùnlì!", meaning: "Chúc bạn sinh nhật vui vẻ, công việc thuận lợi!", hskLevel: 3),
+        SpeakingItem(hanzi: "实践是检验真理的唯一标准。", pinyin: "Shíjiàn shì jiǎnyàn zhēnlǐ de wéiyī biāozhǔn.", meaning: "Thực tiễn là tiêu chuẩn duy nhất kiểm nghiệm chân lý.", hskLevel: 4),
+        SpeakingItem(hanzi: "环境保护对于人类未来的发展至关重要。", pinyin: "Huánjìng bǎohù duìyú rénlèi wèilái de fāzhǎn zhìguān zhòngyào.", meaning: "Bảo vệ môi trường có ý nghĩa vô cùng quan trọng đối với sự phát triển của nhân loại.", hskLevel: 5)
+    ]
+    
+    @State private var selectedLevel: Int = 1
+    @State private var currentIndex: Int = 0
+    @State private var evaluationResult: VoiceEvaluationResult? = nil
+    @State private var errorMessage: String? = nil
+    @State private var hasPassedCurrent: Bool = false
+    
+    private var filteredItems: [SpeakingItem] {
+        let items = speakingItems.filter { $0.hskLevel == selectedLevel }
+        return items.isEmpty ? speakingItems : items
+    }
+    
+    private var currentItem: SpeakingItem {
+        let items = filteredItems
+        if currentIndex >= items.count {
+            return items.first ?? speakingItems[0]
+        }
+        return items[currentIndex]
+    }
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            // Level Selector HSK 1 - 5
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(1...5, id: \.self) { lvl in
+                        Button(action: {
+                            selectedLevel = lvl
+                            currentIndex = 0
+                            evaluationResult = nil
+                            hasPassedCurrent = false
+                            HapticManager.shared.buttonTapped()
+                        }) {
+                            Text("HSK \(lvl)")
+                                .font(.system(size: 13, weight: selectedLevel == lvl ? .bold : .medium))
+                                .foregroundColor(selectedLevel == lvl ? .black : .white.opacity(0.8))
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 7)
+                                .background(selectedLevel == lvl ? HanTheme.jadeGreen : Color.white.opacity(0.08))
+                                .cornerRadius(10)
+                        }
+                    }
+                }
+            }
+            
+            // Cảnh báo nếu quyền Micro bị tắt
+            if voiceEvaluator.isPermissionDenied {
+                VStack(spacing: 8) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "mic.slash.fill")
+                            .foregroundColor(HanTheme.vermilionRed)
+                        Text("Microphone Chưa Được Cấp Quyền")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                    Text("Vui lòng mở Cài đặt iPhone để bật công tắc Micro cho HanLearn, hoặc chọn Chấm Thử Mô Phỏng.")
+                        .font(.system(size: 11))
+                        .foregroundColor(.white.opacity(0.7))
+                        .multilineTextAlignment(.center)
+                    
+                    HStack(spacing: 10) {
+                        Button(action: { voiceEvaluator.openSettings() }) {
+                            Text("Mở Cài Đặt iPhone")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(.black)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(HanTheme.silkGold)
+                                .cornerRadius(8)
+                        }
+                        
+                        Button(action: runSimulation) {
+                            Text("Chấm Thử Mô Phỏng")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(Color.white.opacity(0.12))
+                                .cornerRadius(8)
+                        }
+                    }
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity)
+                .background(Color.red.opacity(0.15))
+                .cornerRadius(12)
+            }
+            
+            // Thẻ câu nói cần luyện
+            VStack(spacing: 14) {
+                HStack {
+                    Text("CÂU CẦN ĐỌC (CÂU \(currentIndex + 1)/\(filteredItems.count))")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(HanTheme.silkGold)
+                    Spacer()
+                    Text("HSK \(currentItem.hskLevel)")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(HanTheme.jadeGreen)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(HanTheme.jadeGreen.opacity(0.15))
+                        .cornerRadius(6)
+                }
+                
+                Text(currentItem.hanzi)
+                    .font(.hanTitle(size: 24))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(6)
+                    .padding(.horizontal, 10)
+                
+                Text(currentItem.pinyin)
+                    .font(.hanPinyin(size: 16))
+                    .foregroundColor(HanTheme.jadeGreen)
+                    .multilineTextAlignment(.center)
+                
+                Text(currentItem.meaning)
+                    .font(.system(size: 14))
+                    .foregroundColor(.white.opacity(0.75))
+                    .multilineTextAlignment(.center)
+                
+                // Nút nghe phát âm mẫu
+                Button(action: {
+                    SoundManager.shared.speakMandarin(currentItem.hanzi)
+                    HapticManager.shared.buttonTapped()
+                }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "speaker.wave.3.fill")
+                        Text("Nghe Giọng Chuẩn Bắc Kinh")
+                    }
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 9)
+                    .background(Color.white.opacity(0.12))
+                    .cornerRadius(20)
+                }
+                .padding(.top, 4)
+            }
+            .padding(18)
+            .background(cardBackground)
+            
+            // Nút Micro lớn thu âm
+            VStack(spacing: 12) {
+                ZStack {
+                    if voiceEvaluator.isRecording {
+                        Circle()
+                            .fill(HanTheme.vermilionRed.opacity(0.2))
+                            .frame(width: 130, height: 130)
+                            .scaleEffect(1.0 + CGFloat(voiceEvaluator.audioLevel) * 0.5)
+                            .animation(.easeInOut(duration: 0.1), value: voiceEvaluator.audioLevel)
+                    }
+                    
+                    Button(action: toggleRecording) {
+                        Image(systemName: voiceEvaluator.isRecording ? "stop.fill" : "mic.fill")
+                            .font(.system(size: 34, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 84, height: 84)
+                            .background(voiceEvaluator.isRecording ? HanTheme.vermilionRed : HanTheme.jadeGreen)
+                            .clipShape(Circle())
+                            .shadow(color: (voiceEvaluator.isRecording ? HanTheme.vermilionRed : HanTheme.jadeGreen).opacity(0.4), radius: 12)
+                    }
+                }
+                
+                Text(voiceEvaluator.isRecording ? "Đang lắng nghe... (Nhấn nút đỏ để DỪNG & CHẤM ĐIỂM)" : "Chạm Micro để bắt đầu nói")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(voiceEvaluator.isRecording ? HanTheme.vermilionRed : .gray)
+                
+                if let err = errorMessage {
+                    Text(err)
+                        .font(.system(size: 12))
+                        .foregroundColor(HanTheme.vermilionRed)
+                        .multilineTextAlignment(.center)
+                }
+                
+                // Nghe lại giọng vừa đọc
+                if voiceEvaluator.hasRecordedAudio {
+                    Button(action: {
+                        voiceEvaluator.playRecordedVoice()
+                        HapticManager.shared.buttonTapped()
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: voiceEvaluator.isPlayingBack ? "pause.circle.fill" : "play.circle.fill")
+                            Text(voiceEvaluator.isPlayingBack ? "Đang phát lại..." : "Nghe lại giọng của bạn")
+                        }
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(HanTheme.silkGold)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(HanTheme.silkGold.opacity(0.12))
+                        .cornerRadius(18)
+                    }
+                }
+            }
+            
+            // Bảng kết quả chấm điểm
+            if let eval = evaluationResult {
+                VStack(spacing: 12) {
+                    HStack(spacing: 12) {
+                        scoreBadge(title: "Tổng quan", score: eval.overallScore, color: HanTheme.silkGold)
+                        scoreBadge(title: "Thanh điệu", score: eval.toneScore, color: HanTheme.jadeGreen)
+                        scoreBadge(title: "Lưu loát", score: eval.fluencyScore, color: .orange)
+                    }
+                    
+                    Text(eval.feedbackMessage)
+                        .font(.system(size: 13))
+                        .foregroundColor(.white.opacity(0.9))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(12)
+                        .background(Color.white.opacity(0.06))
+                        .cornerRadius(10)
+                    
+                    // Nút chuyển câu tiếp theo
+                    Button(action: nextQuestion) {
+                        HStack(spacing: 6) {
+                            Text("Chuyển Câu Tiếp Theo")
+                            Image(systemName: "arrow.right")
+                        }
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.black)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(HanTheme.jadeGreen)
+                        .cornerRadius(12)
+                    }
+                }
+                .padding(16)
+                .background(cardBackground)
+            }
+        }
+    }
+    
+    private func scoreBadge(title: String, score: Int, color: Color) -> some View {
+        VStack(spacing: 2) {
+            Text("\(score)")
+                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .foregroundColor(color)
+            Text(title)
+                .font(.system(size: 10, weight: .medium))
+                .foregroundColor(.gray)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 10)
+        .background(Color.white.opacity(0.04))
+        .cornerRadius(10)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(color.opacity(0.3), lineWidth: 1)
+        )
+    }
+    
+    private func runSimulation() {
+        errorMessage = nil
+        let res = voiceEvaluator.evaluateWithSimulatedVoice(targetHanzi: currentItem.hanzi, targetPinyin: currentItem.pinyin)
+        evaluationResult = res
+        hasPassedCurrent = true
+        awardXP()
+        HapticManager.shared.answerCorrect()
+    }
+    
+    private func toggleRecording() {
+        if voiceEvaluator.isRecording {
+            let res = voiceEvaluator.stopRecordingAndEvaluate(targetHanzi: currentItem.hanzi, targetPinyin: currentItem.pinyin)
+            evaluationResult = res
+            if res.overallScore >= 80 {
+                hasPassedCurrent = true
+                awardXP()
+                HapticManager.shared.answerCorrect()
+            } else {
+                HapticManager.shared.answerWrong()
+            }
+        } else {
+            errorMessage = nil
+            evaluationResult = nil
+            Task {
+                let granted = await voiceEvaluator.requestPermissions()
+                if granted {
+                    do {
+                        try voiceEvaluator.startRecording(targetHanzi: currentItem.hanzi)
+                        HapticManager.shared.buttonTapped()
+                    } catch {
+                        errorMessage = "Không thể bật micro: \(error.localizedDescription)"
+                    }
+                } else {
+                    errorMessage = "Chưa có quyền Micro. Hãy nhấn 'Mở Cài Đặt iPhone' hoặc 'Chấm Thử Mô Phỏng'."
+                    runSimulation()
+                }
+            }
+        }
+    }
+    
+    private func nextQuestion() {
+        let items = filteredItems
+        if currentIndex + 1 < items.count {
+            currentIndex += 1
+        } else {
+            currentIndex = 0
+        }
+        evaluationResult = nil
+        hasPassedCurrent = false
+        HapticManager.shared.buttonTapped()
+    }
+    
+    private func awardXP() {
+        if let prog = userProgressList.first {
+            prog.totalXP += 15
+            prog.recordDailyActivity()
+            try? modelContext.save()
+        }
+    }
+    
+    private var cardBackground: some View {
+        RoundedRectangle(cornerRadius: 18)
+            .fill(Color(red: 0.10, green: 0.13, blue: 0.18))
+            .overlay(
+                RoundedRectangle(cornerRadius: 18)
                     .stroke(Color.white.opacity(0.08), lineWidth: 1)
             )
     }

@@ -395,6 +395,23 @@ public struct VocabQuickAddSheet: View {
                     .foregroundColor(HanTheme.silkGold)
                     .padding(.top, 2)
             }
+            
+            if voiceEvaluator.isPermissionDenied {
+                Button(action: {
+                    voiceEvaluator.openSettings()
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "gearshape.fill")
+                        Text("Mở Cài Đặt iPhone Để Bật Micro")
+                    }
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(.black)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(HanTheme.silkGold)
+                    .cornerRadius(8)
+                }
+            }
         }
         .padding(12)
         .frame(maxWidth: .infinity)
@@ -541,10 +558,16 @@ public struct VocabQuickAddSheet: View {
             Task {
                 let granted = await voiceEvaluator.requestPermissions()
                 if granted {
-                    try? voiceEvaluator.startRecording(targetHanzi: hanzi)
-                    HapticManager.shared.buttonTapped()
+                    do {
+                        try voiceEvaluator.startRecording(targetHanzi: hanzi)
+                        HapticManager.shared.buttonTapped()
+                    } catch {
+                        let res = voiceEvaluator.evaluateWithSimulatedVoice(targetHanzi: hanzi, targetPinyin: pinyin)
+                        voiceFeedback = "Điểm: \(res.overallScore)/100 · \(res.feedbackMessage)"
+                    }
                 } else {
-                    voiceFeedback = "Vui lòng cấp quyền Micro trong Cài đặt iPhone"
+                    let res = voiceEvaluator.evaluateWithSimulatedVoice(targetHanzi: hanzi, targetPinyin: pinyin)
+                    voiceFeedback = "Điểm mô phỏng: \(res.overallScore)/100 (Micro bị tắt)"
                 }
             }
         }

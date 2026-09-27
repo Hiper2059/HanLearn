@@ -72,6 +72,61 @@ public struct VoiceDialogueView: View {
                         
                         // 2. Khu vực Microphone thu âm
                         VStack(spacing: 14) {
+                            // Cảnh báo nếu quyền Micro bị tắt
+                            if voiceEvaluator.isPermissionDenied {
+                                VStack(spacing: 10) {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "mic.slash.fill")
+                                            .foregroundColor(HanTheme.vermilionRed)
+                                            .font(.system(size: 20))
+                                        Text("Quyền Micro đang bị tắt trên iPhone")
+                                            .font(.system(size: 14, weight: .bold))
+                                            .foregroundColor(.white)
+                                    }
+                                    
+                                    Text("Để thu âm giọng nói thật và chấm điểm thanh điệu, bạn cần cho phép HanLearn truy cập Micro.")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.white.opacity(0.75))
+                                        .multilineTextAlignment(.center)
+                                    
+                                    HStack(spacing: 10) {
+                                        Button(action: {
+                                            voiceEvaluator.openSettings()
+                                        }) {
+                                            HStack(spacing: 4) {
+                                                Image(systemName: "gearshape.fill")
+                                                Text("Mở Cài Đặt iPhone")
+                                            }
+                                            .font(.system(size: 13, weight: .bold))
+                                            .foregroundColor(.black)
+                                            .padding(.horizontal, 14)
+                                            .padding(.vertical, 8)
+                                            .background(HanTheme.silkGold)
+                                            .cornerRadius(10)
+                                        }
+                                        
+                                        Button(action: runSimulatedCheck) {
+                                            Text("Chấm Thử Mô Phỏng")
+                                                .font(.system(size: 12, weight: .semibold))
+                                                .foregroundColor(.white)
+                                                .padding(.horizontal, 12)
+                                                .padding(.vertical, 8)
+                                                .background(Color.white.opacity(0.12))
+                                                .cornerRadius(10)
+                                        }
+                                    }
+                                }
+                                .padding(14)
+                                .frame(maxWidth: .infinity)
+                                .background(Color.red.opacity(0.15))
+                                .cornerRadius(14)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .stroke(HanTheme.vermilionRed.opacity(0.4), lineWidth: 1)
+                                )
+                                .padding(.horizontal, 16)
+                            }
+                            
                             ZStack {
                                 if voiceEvaluator.isRecording {
                                     Circle()
@@ -192,6 +247,14 @@ public struct VoiceDialogueView: View {
         )
     }
     
+    private func runSimulatedCheck() {
+        errorMessage = nil
+        let res = voiceEvaluator.evaluateWithSimulatedVoice(targetHanzi: targetHanzi, targetPinyin: targetPinyin)
+        evaluationResult = res
+        saveVoiceRecordSafely(res: res)
+        HapticManager.shared.answerCorrect()
+    }
+    
     private func toggleRecording() {
         if voiceEvaluator.isRecording {
             let res = voiceEvaluator.stopRecordingAndEvaluate(targetHanzi: targetHanzi, targetPinyin: targetPinyin)
@@ -219,7 +282,7 @@ public struct VoiceDialogueView: View {
                         AppLogger.shared.error(tag: "VoiceCoach", message: errorMessage ?? "")
                     }
                 } else {
-                    errorMessage = "Vui lòng cho phép quyền Micro trong Cài đặt iPhone để luyện nói."
+                    errorMessage = "Chưa cấp quyền Micro. Vui lòng nhấn nút 'Mở Cài Đặt iPhone' ở trên để bật."
                     AppLogger.shared.warning(tag: "VoiceCoach", message: "Bị từ chối quyền Micro.")
                 }
             }
