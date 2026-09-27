@@ -3,7 +3,7 @@ options:
   bundleIdPrefix: com.hanlearn
   deploymentTarget:
     iOS: "17.0"
-  xcodeVersion: "15.0"
+  xcodeVersion: "16.0"
 
 settings:
   SWIFT_VERSION: "5.9"
@@ -31,8 +31,8 @@ targets:
     deploymentTarget: "17.0"
     sources:
       - path: HanLearnTests
-    dependencies:
-      - target: HanLearn
+      - path: HanLearn/Services/SRSEngine.swift
+      - path: HanLearn/Services/StrokeOrderEngine.swift
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.hanlearn.tests
 
@@ -44,6 +44,15 @@ schemes:
         HanLearnTests: [test]
     run:
       config: Debug
+    test:
+      config: Debug
+      targets:
+        - HanLearnTests
+
+  HanLearnTests:
+    build:
+      targets:
+        HanLearnTests: all
     test:
       config: Debug
       targets:

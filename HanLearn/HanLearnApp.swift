@@ -22,11 +22,15 @@ struct HanLearnApp: App {
             JournalEntry.self,
             StudyDay.self
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let isTesting = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: isTesting)
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
+            if let fallbackContainer = try? ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]) {
+                return fallbackContainer
+            }
             fatalError("Không thể khởi tạo SwiftData ModelContainer: \(error)")
         }
     }()

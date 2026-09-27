@@ -1,5 +1,7 @@
 import XCTest
+#if canImport(HanLearn)
 @testable import HanLearn
+#endif
 
 final class SRSEngineTests: XCTestCase {
     
@@ -13,12 +15,11 @@ final class SRSEngineTests: XCTestCase {
         )
         
         XCTAssertEqual(result.newRepetitionCount, 1)
-        XCTAssertEqual(result.newInterval, 1) // First step is 1 day
-        XCTAssertEqual(result.newMastery, 15) // Good grade adds 15
+        XCTAssertEqual(result.newInterval, 1)
+        XCTAssertEqual(result.newMastery, 15)
     }
     
     func testConsecutiveReviewsFollowIntervalSteps() {
-        // Step 0 -> Step 1 (1 day)
         let r1 = SRSEngine.processReview(
             grade: .good,
             currentRepetitionCount: 0,
@@ -28,7 +29,6 @@ final class SRSEngineTests: XCTestCase {
         )
         XCTAssertEqual(r1.newInterval, 1)
         
-        // Step 1 -> Step 2 (3 days)
         let r2 = SRSEngine.processReview(
             grade: .good,
             currentRepetitionCount: r1.newRepetitionCount,
@@ -38,7 +38,6 @@ final class SRSEngineTests: XCTestCase {
         )
         XCTAssertEqual(r2.newInterval, 3)
         
-        // Step 2 -> Step 3 (7 days)
         let r3 = SRSEngine.processReview(
             grade: .good,
             currentRepetitionCount: r2.newRepetitionCount,
@@ -59,8 +58,8 @@ final class SRSEngineTests: XCTestCase {
         )
         
         XCTAssertEqual(result.newRepetitionCount, 0)
-        XCTAssertEqual(result.newInterval, 1) // Resets to first step
-        XCTAssertEqual(result.newMastery, 45) // Penalized by 15
+        XCTAssertEqual(result.newInterval, 1)
+        XCTAssertEqual(result.newMastery, 45)
     }
     
     func testEasyGradeBoostsMasteryMore() {
@@ -72,6 +71,6 @@ final class SRSEngineTests: XCTestCase {
             currentMastery: 0
         )
         
-        XCTAssertEqual(result.newMastery, 25) // Easy grade adds 25
+        XCTAssertEqual(result.newMastery, 25)
     }
 }

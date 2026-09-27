@@ -1,5 +1,7 @@
 import XCTest
+#if canImport(HanLearn)
 @testable import HanLearn
+#endif
 
 final class StrokeOrderEngineTests: XCTestCase {
     
