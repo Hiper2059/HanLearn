@@ -717,22 +717,57 @@ public struct HSKHubView: View {
     }
     
     private func triggerAutoGenerate() {
-        guard !topicSearchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        let topic = topicSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !topic.isEmpty else { return }
         isGenerating = true
         HapticManager.shared.buttonTapped()
         
         Task {
-            let newLesson = await CurriculumGeneratorService.shared.generateLesson(
-                hskLevel: selectedLevel,
-                customTopic: topicSearchText
-            )
-            
-            await MainActor.run {
-                modelContext.insert(newLesson)
-                try? modelContext.save()
-                isGenerating = false
-                topicSearchText = ""
-                HapticManager.shared.answerCorrect()
+            do {
+                let pkg = try await HSKDiscoveryService.shared.generateHSKLesson(
+                    level: selectedLevel,
+                    topic: topic
+                )
+                
+                await MainActor.run {
+                    let newLesson = HSKLesson(
+                        hskLevel: pkg.hskLevel,
+                        title: pkg.title,
+                        topic: pkg.topic,
+                        summary: pkg.summary,
+                        grammarExplanation: pkg.grammarExplanation,
+                        dialogueChinese: pkg.dialogueChinese,
+                        dialoguePinyin: pkg.dialoguePinyin,
+                        dialogueVietnamese: pkg.dialogueVietnamese
+                    )
+                    
+                    for w in pkg.vocabulary {
+                        let word = HSKWord(
+                            hanzi: w.hanzi,
+                            pinyin: w.pinyin,
+                            sinoVietnamese: w.sinoVietnamese,
+                            vietnameseMeaning: w.vietnameseMeaning,
+                            hskLevel: pkg.hskLevel,
+                            exampleSentenceHanzi: w.exampleSentence,
+                            exampleSentencePinyin: w.examplePinyin,
+                            exampleSentenceTranslation: w.exampleTranslation,
+                            strokeCount: w.strokeCount
+                        )
+                        word.nextReviewAt = Date()
+                        word.lesson = newLesson
+                        newLesson.vocabularyList.append(word)
+                    }
+                    
+                    modelContext.insert(newLesson)
+                    try? modelContext.save()
+                    isGenerating = false
+                    topicSearchText = ""
+                    HapticManager.shared.answerCorrect()
+                }
+            } catch {
+                await MainActor.run {
+                    isGenerating = false
+                }
             }
         }
     }
