@@ -127,7 +127,14 @@ struct HanLearnApp: App {
             context.insert(sampleMistake)
         }
         
-        try? context.save()
+        do {
+            try context.save()
+            let totalLessons = (try? context.fetchCount(FetchDescriptor<HSKLesson>())) ?? 0
+            let totalWords = (try? context.fetchCount(FetchDescriptor<HSKWord>())) ?? 0
+            AppLogger.shared.success(tag: "SwiftData", message: "Đã nạp kho giáo trình SHZ: \(totalLessons) bài học, \(totalWords) từ vựng HSK 1-5.")
+        } catch {
+            AppLogger.shared.error(tag: "SwiftData", message: "Lỗi lưu SwiftData: \(error.localizedDescription)")
+        }
     }
 }
 

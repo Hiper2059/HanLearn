@@ -542,13 +542,23 @@ public struct InteractiveLessonStudyView: View {
             let res = voiceEvaluator.stopRecordingAndEvaluate(targetHanzi: word.hanzi, targetPinyin: word.pinyin)
             evaluationResult = res
             isShowingVoiceResult = true
-            HapticManager.shared.answerCorrect()
+            if res.overallScore >= 80 {
+                HapticManager.shared.answerCorrect()
+            } else {
+                HapticManager.shared.answerWrong()
+            }
         } else {
             Task {
                 let granted = await voiceEvaluator.requestPermissions()
                 if granted {
-                    try? voiceEvaluator.startRecording(targetHanzi: word.hanzi)
-                    HapticManager.shared.buttonTapped()
+                    do {
+                        try voiceEvaluator.startRecording(targetHanzi: word.hanzi)
+                        HapticManager.shared.buttonTapped()
+                    } catch {
+                        AppLogger.shared.error(tag: "InteractiveStudy", message: "Lỗi thu âm: \(error.localizedDescription)")
+                    }
+                } else {
+                    AppLogger.shared.warning(tag: "InteractiveStudy", message: "Chưa cấp quyền micro.")
                 }
             }
         }

@@ -24,8 +24,13 @@
     <string>HanLearn cần quyền microphone để luyện phát âm tiếng Trung và chấm điểm thanh điệu.</string>
     <key>NSSpeechRecognitionUsageDescription</key>
     <string>HanLearn cần quyền nhận diện giọng nói để phân tích phát âm của bạn.</string>
+    <key>UILaunchStoryboardName</key>
+    <string>LaunchScreen</string>
     <key>UILaunchScreen</key>
-    <dict/>
+    <dict>
+        <key>UIImageRespectsSafeAreaInsets</key>
+        <false/>
+    </dict>
     <key>UISupportedInterfaceOrientations</key>
     <array>
         <string>UIInterfaceOrientationPortrait</string>

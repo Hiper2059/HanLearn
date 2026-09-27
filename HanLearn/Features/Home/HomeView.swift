@@ -21,6 +21,7 @@ public struct HomeView: View {
     @State private var showingLessonBrowser: Bool = false
     @State private var showingPracticeZone: Bool = false
     @State private var showingExamAndMistakes: Bool = false
+    @State private var showingDebugLog: Bool = false
     
     private var progress: UserProgress {
         userProgressList.first ?? UserProgress()
@@ -87,6 +88,25 @@ public struct HomeView: View {
             .navigationTitle("Hôm nay")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: {
+                        showingDebugLog = true
+                        HapticManager.shared.buttonTapped()
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "terminal.fill")
+                            Text("Logs")
+                        }
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(HanTheme.silkGold)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(HanTheme.silkGold.opacity(0.15))
+                        .cornerRadius(12)
+                    }
+                    .accessibilityLabel("Mở bảng Log chẩn đoán")
+                }
+                
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
                         showingQuickAdd = true
@@ -98,6 +118,9 @@ public struct HomeView: View {
                     }
                     .accessibilityLabel("Thêm từ vựng mới")
                 }
+            }
+            .sheet(isPresented: $showingDebugLog) {
+                DebugLogView()
             }
             .sheet(isPresented: $showingQuickAdd) {
                 VocabQuickAddSheet()

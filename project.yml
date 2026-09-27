@@ -23,6 +23,7 @@ targets:
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.hanlearn.app
       GENERATE_INFOPLIST_FILE: NO
+      INFOPLIST_FILE: HanLearn/Info.plist
 
 schemes:
   HanLearn:

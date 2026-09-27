@@ -19,6 +19,7 @@ public struct ProgressAndBackupView: View {
     
     @State private var showingExportSheet: Bool = false
     @State private var showingImportSheet: Bool = false
+    @State private var showingDebugLog: Bool = false
     @State private var exportedJSONString: String = ""
     @State private var importInputString: String = ""
     @State private var showImportAlert: Bool = false
@@ -81,6 +82,9 @@ public struct ProgressAndBackupView: View {
                         
                         // 5. Cụm Sao lưu & Khôi phục (JSON Backup 100% Offline)
                         backupSection
+                        
+                        // 6. Chẩn đoán hệ thống & Logs
+                        diagnosticsSection
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 40)
@@ -88,6 +92,9 @@ public struct ProgressAndBackupView: View {
             }
             .navigationTitle("Tiến Độ & Sao Lưu")
             .navigationBarTitleDisplayMode(.large)
+            .sheet(isPresented: $showingDebugLog) {
+                DebugLogView()
+            }
             .sheet(isPresented: $showingExportSheet) {
                 ExportJSONSheet(jsonString: exportedJSONString)
             }
@@ -366,6 +373,55 @@ public struct ProgressAndBackupView: View {
                             .stroke(HanTheme.jadeGreen.opacity(0.3), lineWidth: 1)
                     )
             )
+        }
+    }
+    
+    // MARK: - 6. CHẨN ĐOÁN HỆ THỐNG & LOGS
+    private var diagnosticsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("CHẨN ĐOÁN HỆ THỐNG & LOGS")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(.gray)
+            
+            Button(action: {
+                showingDebugLog = true
+                HapticManager.shared.buttonTapped()
+            }) {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(HanTheme.silkGold.opacity(0.18))
+                            .frame(width: 42, height: 42)
+                        Image(systemName: "terminal.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(HanTheme.silkGold)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Xem Logs & Kiểm tra Micro")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(.white)
+                        Text("Theo dõi lỗi, AudioSession, Quyền & Độ phân giải màn hình")
+                            .font(.system(size: 11))
+                            .foregroundColor(.white.opacity(0.6))
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(HanTheme.silkGold)
+                }
+                .padding(14)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color(red: 0.12, green: 0.11, blue: 0.08))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(HanTheme.silkGold.opacity(0.3), lineWidth: 1)
+                        )
+                )
+            }
         }
     }
     

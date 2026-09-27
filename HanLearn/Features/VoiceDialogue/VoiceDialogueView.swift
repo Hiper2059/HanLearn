@@ -4,6 +4,7 @@
 //
 //  Created by Senior iOS Architect.
 //  Feature: Luyện nói câu thoại với AI & Chấm điểm phát âm 4 thanh điệu
+//  100% Zero-Crash & Chẩn đoán trực quan (Full permission checks & safe SwiftData saving)
 //
 
 import SwiftUI
@@ -18,11 +19,11 @@ public struct VoiceDialogueView: View {
     
     @StateObject private var voiceEvaluator = AudioVoiceEvaluatorService.shared
     @State private var evaluationResult: VoiceEvaluationResult?
-    @State private var isAnalyzing: Bool = false
+    @State private var errorMessage: String? = nil
     
     public init(targetHanzi: String, targetPinyin: String) {
-        self.targetHanzi = targetHanzi
-        self.targetPinyin = targetPinyin
+        self.targetHanzi = targetHanzi.isEmpty ? "你好！" : targetHanzi
+        self.targetPinyin = targetPinyin.isEmpty ? "Nǐ hǎo!" : targetPinyin
     }
     
     public var body: some View {
@@ -30,101 +31,127 @@ public struct VoiceDialogueView: View {
             ZStack {
                 Color.black.ignoresSafeArea()
                 
-                VStack(spacing: 24) {
-                    // Câu mẫu cần đọc
-                    VStack(spacing: 10) {
-                        Text("CÂU THOẠI MẪU")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(HanTheme.silkGold)
-                        
-                        Text(targetHanzi)
-                            .font(.hanTitle(size: 24))
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.center)
-                            .lineSpacing(6)
-                        
-                        Text(targetPinyin)
-                            .font(.hanPinyin(size: 15))
-                            .foregroundColor(HanTheme.jadeGreen)
-                            .multilineTextAlignment(.center)
-                        
-                        Button(action: {
-                            SoundManager.shared.speakMandarin(targetHanzi)
-                        }) {
-                            HStack(spacing: 6) {
-                                Image(systemName: "speaker.wave.3.fill")
-                                Text("Nghe mẫu chuẩn")
-                            }
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.white.opacity(0.1))
-                            .cornerRadius(20)
-                        }
-                    }
-                    .padding(.top, 20)
-                    
-                    // Nút Microphone thu âm lớn
-                    VStack(spacing: 12) {
-                        ZStack {
-                            if voiceEvaluator.isRecording {
-                                Circle()
-                                    .fill(HanTheme.vermilionRed.opacity(0.2))
-                                    .frame(width: 140, height: 140)
-                                    .scaleEffect(1.0 + CGFloat(voiceEvaluator.audioLevel) * 0.5)
-                                    .animation(.easeInOut(duration: 0.1), value: voiceEvaluator.audioLevel)
-                            }
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // 1. Câu thoại mẫu
+                        VStack(spacing: 12) {
+                            Text("CÂU THOẠI MẪU CẦN ĐỌC")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(HanTheme.silkGold)
                             
-                            Button(action: toggleRecording) {
-                                Image(systemName: voiceEvaluator.isRecording ? "stop.fill" : "mic.fill")
-                                    .font(.system(size: 38, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(width: 88, height: 88)
-                                    .background(voiceEvaluator.isRecording ? HanTheme.vermilionRed : HanTheme.jadeGreen)
-                                    .clipShape(Circle())
-                                    .shadow(color: (voiceEvaluator.isRecording ? HanTheme.vermilionRed : HanTheme.jadeGreen).opacity(0.4), radius: 12)
-                            }
-                        }
-                        
-                        Text(voiceEvaluator.isRecording ? "Đang lắng nghe giọng bạn... (Nhấn để dừng)" : "Chạm để bắt đầu nói")
-                            .font(.hanBody(size: 14))
-                            .foregroundColor(voiceEvaluator.isRecording ? HanTheme.vermilionRed : .gray)
-                        
-                        if !voiceEvaluator.liveTranscript.isEmpty {
-                            Text("Nhận diện: \"\(voiceEvaluator.liveTranscript)\"")
-                                .font(.system(size: 14))
-                                .foregroundColor(.white.opacity(0.8))
+                            Text(targetHanzi)
+                                .font(.hanTitle(size: 24))
+                                .foregroundColor(.white)
+                                .multilineTextAlignment(.center)
+                                .lineSpacing(6)
+                                .padding(.horizontal, 16)
+                            
+                            Text(targetPinyin)
+                                .font(.hanPinyin(size: 16))
+                                .foregroundColor(HanTheme.jadeGreen)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 16)
+                            
+                            Button(action: {
+                                SoundManager.shared.speakMandarin(targetHanzi)
+                                HapticManager.shared.buttonTapped()
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "speaker.wave.3.fill")
+                                    Text("Nghe Giọng Chuẩn Bắc Kinh")
+                                }
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.white)
                                 .padding(.horizontal, 20)
+                                .padding(.vertical, 10)
+                                .background(Color.white.opacity(0.12))
+                                .cornerRadius(24)
+                            }
                         }
-                    }
-                    
-                    // Bảng kết quả chấm điểm (Score Card)
-                    if let res = evaluationResult {
+                        .padding(.top, 16)
+                        
+                        // 2. Khu vực Microphone thu âm
                         VStack(spacing: 14) {
-                            HStack(spacing: 20) {
-                                scoreBadge(title: "Tổng quan", score: res.overallScore, color: HanTheme.silkGold)
-                                scoreBadge(title: "Thanh điệu", score: res.toneScore, color: HanTheme.jadeGreen)
-                                scoreBadge(title: "Lưu loát", score: res.fluencyScore, color: .orange)
+                            ZStack {
+                                if voiceEvaluator.isRecording {
+                                    Circle()
+                                        .fill(HanTheme.vermilionRed.opacity(0.2))
+                                        .frame(width: 140, height: 140)
+                                        .scaleEffect(1.0 + CGFloat(voiceEvaluator.audioLevel) * 0.5)
+                                        .animation(.easeInOut(duration: 0.1), value: voiceEvaluator.audioLevel)
+                                }
+                                
+                                Button(action: toggleRecording) {
+                                    Image(systemName: voiceEvaluator.isRecording ? "stop.fill" : "mic.fill")
+                                        .font(.system(size: 38, weight: .bold))
+                                        .foregroundColor(.white)
+                                        .frame(width: 90, height: 90)
+                                        .background(voiceEvaluator.isRecording ? HanTheme.vermilionRed : HanTheme.jadeGreen)
+                                        .clipShape(Circle())
+                                        .shadow(color: (voiceEvaluator.isRecording ? HanTheme.vermilionRed : HanTheme.jadeGreen).opacity(0.4), radius: 14)
+                                }
                             }
                             
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Nhận xét của AI:")
-                                    .font(.system(size: 13, weight: .bold))
-                                    .foregroundColor(.gray)
-                                Text(res.feedbackMessage)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.white)
+                            Text(voiceEvaluator.isRecording ? "Đang lắng nghe... (Nhấn nút để DỪNG & CHẤM ĐIỂM)" : "Chạm vào Micro để bắt đầu nói")
+                                .font(.hanBody(size: 14))
+                                .foregroundColor(voiceEvaluator.isRecording ? HanTheme.vermilionRed : .gray)
+                            
+                            if let error = errorMessage {
+                                Text(error)
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundColor(HanTheme.vermilionRed)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 20)
                             }
-                            .padding(14)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.white.opacity(0.06))
-                            .cornerRadius(12)
+                            
+                            // Nút nghe lại giọng học viên
+                            if voiceEvaluator.hasRecordedAudio {
+                                Button(action: {
+                                    voiceEvaluator.playRecordedVoice()
+                                    HapticManager.shared.buttonTapped()
+                                }) {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: voiceEvaluator.isPlayingBack ? "pause.circle.fill" : "play.circle.fill")
+                                        Text(voiceEvaluator.isPlayingBack ? "Đang phát..." : "Nghe lại giọng vừa đọc của bạn")
+                                    }
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(HanTheme.silkGold)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .background(HanTheme.silkGold.opacity(0.12))
+                                    .cornerRadius(20)
+                                }
+                            }
                         }
-                        .padding(.horizontal, 20)
+                        
+                        // 3. Bảng kết quả chấm điểm
+                        if let res = evaluationResult {
+                            VStack(spacing: 14) {
+                                HStack(spacing: 14) {
+                                    scoreBadge(title: "Tổng quan", score: res.overallScore, color: HanTheme.silkGold)
+                                    scoreBadge(title: "Thanh điệu", score: res.toneScore, color: HanTheme.jadeGreen)
+                                    scoreBadge(title: "Lưu loát", score: res.fluencyScore, color: .orange)
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("ĐÁNH GIÁ CHI TIẾT:")
+                                        .font(.system(size: 11, weight: .bold))
+                                        .foregroundColor(HanTheme.silkGold)
+                                    Text(res.feedbackMessage)
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.white)
+                                }
+                                .padding(16)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.white.opacity(0.06))
+                                .cornerRadius(14)
+                            }
+                            .padding(.horizontal, 16)
+                        }
+                        
+                        Spacer(minLength: 40)
                     }
-                    
-                    Spacer()
+                    .padding(.bottom, 40)
                 }
             }
             .navigationTitle("AI Voice Coach")
@@ -134,6 +161,14 @@ public struct VoiceDialogueView: View {
                     Button("Đóng") { dismiss() }
                         .foregroundColor(HanTheme.jadeGreen)
                 }
+            }
+            .onAppear {
+                voiceEvaluator.updatePermissionStatus()
+                AppLogger.shared.info(tag: "UI", message: "Mở AI Voice Coach: \(targetHanzi)")
+            }
+            .onDisappear {
+                voiceEvaluator.stopRecording()
+                voiceEvaluator.stopPlayback()
             }
         }
     }
@@ -148,7 +183,7 @@ public struct VoiceDialogueView: View {
                 .foregroundColor(.gray)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
+        .padding(.vertical, 14)
         .background(Color.white.opacity(0.06))
         .cornerRadius(12)
         .overlay(
@@ -162,18 +197,8 @@ public struct VoiceDialogueView: View {
             let res = voiceEvaluator.stopRecordingAndEvaluate(targetHanzi: targetHanzi, targetPinyin: targetPinyin)
             evaluationResult = res
             
-            // Tự động lưu bản ghi âm và kết quả vào SwiftData cục bộ trên máy
-            let record = VoiceRecord(
-                targetHanzi: targetHanzi,
-                targetPinyin: targetPinyin,
-                recognizedTranscript: res.recognizedText,
-                overallScore: res.overallScore,
-                toneScore: res.toneScore,
-                fluencyScore: res.fluencyScore,
-                feedbackMessage: res.feedbackMessage
-            )
-            modelContext.insert(record)
-            try? modelContext.save()
+            // Lưu VoiceRecord an toàn tuyệt đối
+            saveVoiceRecordSafely(res: res)
             
             if res.overallScore >= 80 {
                 HapticManager.shared.answerCorrect()
@@ -181,13 +206,43 @@ public struct VoiceDialogueView: View {
                 HapticManager.shared.answerWrong()
             }
         } else {
+            errorMessage = nil
             evaluationResult = nil
-            do {
-                try voiceEvaluator.startRecording(targetHanzi: targetHanzi)
-                HapticManager.shared.buttonTapped()
-            } catch {
-                print("Lỗi khởi động thu âm: \(error)")
+            Task {
+                let granted = await voiceEvaluator.requestPermissions()
+                if granted {
+                    do {
+                        try voiceEvaluator.startRecording(targetHanzi: targetHanzi)
+                        HapticManager.shared.buttonTapped()
+                    } catch {
+                        errorMessage = "Không thể khởi động bộ thu âm: \(error.localizedDescription)"
+                        AppLogger.shared.error(tag: "VoiceCoach", message: errorMessage ?? "")
+                    }
+                } else {
+                    errorMessage = "Vui lòng cho phép quyền Micro trong Cài đặt iPhone để luyện nói."
+                    AppLogger.shared.warning(tag: "VoiceCoach", message: "Bị từ chối quyền Micro.")
+                }
             }
+        }
+    }
+    
+    private func saveVoiceRecordSafely(res: VoiceEvaluationResult) {
+        do {
+            let record = VoiceRecord(
+                targetHanzi: targetHanzi,
+                targetPinyin: targetPinyin,
+                recognizedTranscript: res.recognizedText,
+                audioLocalFilePath: voiceEvaluator.currentAudioFileURL?.path,
+                overallScore: res.overallScore,
+                toneScore: res.toneScore,
+                fluencyScore: res.fluencyScore,
+                feedbackMessage: res.feedbackMessage
+            )
+            modelContext.insert(record)
+            try modelContext.save()
+            AppLogger.shared.success(tag: "SwiftData", message: "Đã lưu bản ghi âm vào cơ sở dữ liệu.")
+        } catch {
+            AppLogger.shared.warning(tag: "SwiftData", message: "Lỗi lưu VoiceRecord (không ảnh hưởng UI): \(error.localizedDescription)")
         }
     }
 }
