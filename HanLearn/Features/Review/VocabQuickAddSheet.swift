@@ -249,138 +249,9 @@ public struct VocabQuickAddSheet: View {
     // MARK: - 2. Thẻ hiển thị từ vựng tìm thấy (Cách ghi, cách viết, cách nói & Check đọc)
     private var foundWordCard: some View {
         VStack(spacing: 14) {
-            // Header: Cách ghi, Cách nói & Cách viết
-            HStack(spacing: 14) {
-                // Ô Mễ Tự Cách (Cách viết)
-                VStack(spacing: 4) {
-                    TianziGeView(
-                        character: hanzi,
-                        size: 90,
-                        showGrid: true,
-                        gridColor: Color.red.opacity(0.4),
-                        textColor: .white
-                    )
-                    Text("Cách viết")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(.white.opacity(0.6))
-                }
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Cách ghi:")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundColor(.white.opacity(0.5))
-                            Text(hanzi)
-                                .font(.system(size: 28, weight: .bold, design: .serif))
-                                .foregroundColor(.white)
-                        }
-                        
-                        Spacer()
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Cách nói:")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundColor(HanTheme.silkGold)
-                            Text(pinyin)
-                                .font(.system(size: 17, weight: .bold, design: .monospaced))
-                                .foregroundColor(HanTheme.silkGold)
-                        }
-                        
-                        // Nút Nghe mẫu chuẩn
-                        Button(action: {
-                            SoundManager.shared.speakMandarin(hanzi)
-                            HapticManager.shared.buttonTapped()
-                        }) {
-                            Image(systemName: "speaker.wave.3.fill")
-                                .foregroundColor(HanTheme.jadeGreen)
-                                .font(.system(size: 18))
-                                .padding(10)
-                                .background(HanTheme.jadeGreen.opacity(0.18))
-                                .clipShape(Circle())
-                        }
-                    }
-                    
-                    Divider().background(Color.white.opacity(0.1)).padding(.vertical, 2)
-                    
-                    Text("Nghĩa tiếng Việt: \(meaning)")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(HanTheme.jadeGreen)
-                    
-                    if !sinoVietnamese.isEmpty {
-                        Text("Âm Hán-Việt: \(sinoVietnamese)")
-                            .font(.system(size: 12))
-                            .foregroundColor(.white.opacity(0.6))
-                    }
-                }
-            }
-            
+            wordHeaderPreview
             Divider().background(Color.white.opacity(0.1))
-            
-            // CỤM LUYỆN ĐỌC & CHECK PHÁT ÂM
-            VStack(spacing: 10) {
-                HStack {
-                    Text("ĐỌC THỬ ĐỂ CHECK PHÁT ÂM CỦA BẠN:")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(.white.opacity(0.7))
-                    Spacer()
-                    if voiceEvaluator.isRecording {
-                        HStack(spacing: 3) {
-                            ForEach(0..<4, id: \.self) { idx in
-                                RoundedRectangle(cornerRadius: 2)
-                                    .fill(HanTheme.vermilionRed)
-                                    .frame(width: 4, height: 12 + CGFloat(voiceEvaluator.audioLevel * 18 * Float(idx + 1) / 3))
-                            }
-                        }
-                    }
-                }
-                
-                HStack(spacing: 12) {
-                    // Nút thu âm nói
-                    Button(action: toggleVoiceCheck) {
-                        HStack(spacing: 6) {
-                            Image(systemName: voiceEvaluator.isRecording ? "stop.fill" : "mic.fill")
-                            Text(voiceEvaluator.isRecording ? "Dừng Thu & Chấm Điểm" : "Đọc Thử Để Check")
-                        }
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(voiceEvaluator.isRecording ? HanTheme.vermilionRed : Color.blue)
-                        .cornerRadius(12)
-                    }
-                    
-                    // Nút nghe lại giọng vừa nói
-                    if voiceEvaluator.hasRecordedAudio {
-                        Button(action: {
-                            voiceEvaluator.playRecordedVoice()
-                            HapticManager.shared.buttonTapped()
-                        }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: voiceEvaluator.isPlayingBack ? "pause.circle.fill" : "play.circle.fill")
-                                Text(voiceEvaluator.isPlayingBack ? "Đang phát..." : "Nghe Lại Giọng Tôi")
-                            }
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(HanTheme.silkGold)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 10)
-                            .background(HanTheme.silkGold.opacity(0.15))
-                            .cornerRadius(12)
-                        }
-                    }
-                }
-                
-                if let fb = voiceFeedback {
-                    Text(fb)
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(HanTheme.silkGold)
-                        .padding(.top, 2)
-                }
-            }
-            .padding(12)
-            .frame(maxWidth: .infinity)
-            .background(Color.white.opacity(0.04))
-            .cornerRadius(12)
+            voiceCheckSectionView
         }
         .padding(16)
         .background(
@@ -391,6 +262,144 @@ public struct VocabQuickAddSheet: View {
                         .stroke(HanTheme.jadeGreen.opacity(0.3), lineWidth: 1)
                 )
         )
+    }
+    
+    private var wordHeaderPreview: some View {
+        HStack(spacing: 14) {
+            // Ô Mễ Tự Cách (Cách viết)
+            VStack(spacing: 4) {
+                TianziGeView(
+                    character: hanzi,
+                    size: 90,
+                    showGrid: true,
+                    gridColor: Color.red.opacity(0.4),
+                    textColor: .white
+                )
+                Text("Cách viết")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.6))
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Cách ghi:")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.white.opacity(0.5))
+                        Text(hanzi)
+                            .font(.system(size: 28, weight: .bold, design: .serif))
+                            .foregroundColor(.white)
+                    }
+                    
+                    Spacer()
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Cách nói:")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(HanTheme.silkGold)
+                        Text(pinyin)
+                            .font(.system(size: 17, weight: .bold, design: .monospaced))
+                            .foregroundColor(HanTheme.silkGold)
+                    }
+                    
+                    // Nút Nghe mẫu chuẩn
+                    Button(action: {
+                        SoundManager.shared.speakMandarin(hanzi)
+                        HapticManager.shared.buttonTapped()
+                    }) {
+                        Image(systemName: "speaker.wave.3.fill")
+                            .foregroundColor(HanTheme.jadeGreen)
+                            .font(.system(size: 18))
+                            .padding(10)
+                            .background(HanTheme.jadeGreen.opacity(0.18))
+                            .clipShape(Circle())
+                    }
+                }
+                
+                Divider().background(Color.white.opacity(0.1)).padding(.vertical, 2)
+                
+                Text("Nghĩa tiếng Việt: \(meaning)")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(HanTheme.jadeGreen)
+                
+                if !sinoVietnamese.isEmpty {
+                    Text("Âm Hán-Việt: \(sinoVietnamese)")
+                        .font(.system(size: 12))
+                        .foregroundColor(.white.opacity(0.6))
+                }
+            }
+        }
+    }
+    
+    private func waveformBarHeight(index: Int) -> CGFloat {
+        let level = CGFloat(max(0.1, voiceEvaluator.audioLevel))
+        return 12.0 + level * CGFloat(10 + index * 4)
+    }
+    
+    private var voiceCheckSectionView: some View {
+        VStack(spacing: 10) {
+            HStack {
+                Text("ĐỌC THỬ ĐỂ CHECK PHÁT ÂM CỦA BẠN:")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(.white.opacity(0.7))
+                Spacer()
+                if voiceEvaluator.isRecording {
+                    HStack(spacing: 3) {
+                        ForEach(0..<4, id: \.self) { idx in
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(HanTheme.vermilionRed)
+                                .frame(width: 4, height: waveformBarHeight(index: idx))
+                        }
+                    }
+                }
+            }
+            
+            HStack(spacing: 12) {
+                // Nút thu âm nói
+                Button(action: toggleVoiceCheck) {
+                    HStack(spacing: 6) {
+                        Image(systemName: voiceEvaluator.isRecording ? "stop.fill" : "mic.fill")
+                        Text(voiceEvaluator.isRecording ? "Dừng Thu & Chấm Điểm" : "Đọc Thử Để Check")
+                    }
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(voiceEvaluator.isRecording ? HanTheme.vermilionRed : Color.blue)
+                    .cornerRadius(12)
+                }
+                
+                // Nút nghe lại giọng vừa nói
+                if voiceEvaluator.hasRecordedAudio {
+                    Button(action: {
+                        voiceEvaluator.playRecordedVoice()
+                        HapticManager.shared.buttonTapped()
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: voiceEvaluator.isPlayingBack ? "pause.circle.fill" : "play.circle.fill")
+                            Text(voiceEvaluator.isPlayingBack ? "Đang phát..." : "Nghe Lại Giọng Tôi")
+                        }
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(HanTheme.silkGold)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(HanTheme.silkGold.opacity(0.15))
+                        .cornerRadius(12)
+                    }
+                }
+            }
+            
+            if let fb = voiceFeedback {
+                Text(fb)
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(HanTheme.silkGold)
+                    .padding(.top, 2)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity)
+        .background(Color.white.opacity(0.04))
+        .cornerRadius(12)
     }
     
     // MARK: - 3. Biểu Mẫu Chi Tiết

@@ -8,6 +8,46 @@
 
 import SwiftUI
 
+public struct Line: Identifiable {
+    public var id = UUID()
+    public var points: [CGPoint]
+    public var lineWidth: CGFloat = 11
+    public var isFinished: Bool = false
+    
+    public init(points: [CGPoint], lineWidth: CGFloat = 11, isFinished: Bool = false) {
+        self.points = points
+        self.lineWidth = lineWidth
+        self.isFinished = isFinished
+    }
+}
+
+public struct TianziGridShape: Shape {
+    public init() {}
+    public func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let w = rect.width
+        let h = rect.height
+        
+        // Ngang giữa
+        path.move(to: CGPoint(x: 0, y: h / 2))
+        path.addLine(to: CGPoint(x: w, y: h / 2))
+        
+        // Dọc giữa
+        path.move(to: CGPoint(x: w / 2, y: 0))
+        path.addLine(to: CGPoint(x: w / 2, y: h))
+        
+        // Chéo 1
+        path.move(to: CGPoint(x: 0, y: 0))
+        path.addLine(to: CGPoint(x: w, y: h))
+        
+        // Chéo 2
+        path.move(to: CGPoint(x: w, y: 0))
+        path.addLine(to: CGPoint(x: 0, y: h))
+        
+        return path
+    }
+}
+
 public struct StrokeCanvasView: View {
     @Environment(\.dismiss) private var dismiss
     public let word: HSKWord
