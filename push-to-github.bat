@@ -1,32 +1,28 @@
 @echo off
 chcp 65001 >nul
-title Đẩy HanLearn lên GitHub
+title Đẩy HanLearn lên GitHub - Hiper2059
 echo ============================================================
 echo           CÔNG CỤ ĐẨY CODE HANLEARN LÊN GITHUB
 echo ============================================================
 echo.
+echo Tài khoản GitHub của bạn: Hiper2059
+echo Repository đích: https://github.com/Hiper2059/HanLearn.git
+echo.
+
 set "PATH=%PATH%;C:\Users\Admin\AppData\Local\Programs\Git\cmd"
 
-set /p REPO_URL="Nhập hoặc dán link GitHub Repo của bạn (VD: https://github.com/.../HanLearn.git): "
-
-if "%REPO_URL%"=="" (
-    echo.
-    echo [Lỗi] Bạn chưa nhập link. Vui lòng chạy lại file.
-    echo.
-    pause
-    exit /b
-)
-
-echo.
 echo [1/3] Đang kết nối với Repository...
 git remote remove origin >nul 2>&1
-git remote add origin %REPO_URL%
+git remote add origin https://github.com/Hiper2059/HanLearn.git
 
 echo [2/3] Cấu hình nhánh chính (main)...
 git branch -M main
 
 echo [3/3] Đang tải mã nguồn lên GitHub...
-echo (Nếu đây là lần đầu, một cửa sổ trình duyệt sẽ hiện lên để bạn bấm "Sign in with browser" xác thực)
+echo.
+echo * CHÚ Ý: Nếu hệ thống yêu cầu:
+echo   - Username: nhập Hiper2059
+echo   - Password: nhập GitHub Personal Access Token (PAT) của bạn
 echo.
 git push -u origin main
 
@@ -34,13 +30,14 @@ if %errorlevel% equ 0 (
     echo.
     echo ============================================================
     echo [THÀNH CÔNG] Toàn bộ code Swift và bài test đã lên GitHub!
-    echo Bây giờ bạn hãy mở GitHub lên và bấm vào tab "Actions" để xem
-    echo máy chủ macOS tự động build và chạy test!
+    echo Hãy mở trình duyệt xem kết quả test tự động tại:
+    echo https://github.com/Hiper2059/HanLearn/actions
     echo ============================================================
 ) else (
     echo.
-    echo [Thông báo] Nếu gặp lỗi xác thực hoặc quyền hạn, hãy kiểm tra lại
-    echo xem link Repo đã chính xác chưa hoặc bạn đã đăng nhập đúng tài khoản chưa.
+    echo [Lưu ý nếu gặp lỗi]:
+    echo 1. Hãy đảm bảo bạn đã bấm "Create repository" trên GitHub với tên "HanLearn".
+    echo 2. Khi Git hỏi Password, hãy dùng GitHub Token (PAT), không dùng mật khẩu thường.
 )
 
 echo.
