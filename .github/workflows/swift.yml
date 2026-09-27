@@ -43,16 +43,9 @@ jobs:
             -derivedDataPath build_output \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Compress HanLearn.app to ZIP
-        run: |
-          cd build_output/Build/Products/Debug-iphonesimulator
-          zip -r ../../../HanLearn-Simulator.zip HanLearn.app
-          cd ../../..
-          ls -lh HanLearn-Simulator.zip
-
       - name: Upload Simulator App (For Appetize.io)
         uses: actions/upload-artifact@v4
         with:
           name: HanLearn-Simulator
-          path: HanLearn-Simulator.zip
+          path: build_output/Build/Products/Debug-iphonesimulator/HanLearn.app
           retention-days: 7
