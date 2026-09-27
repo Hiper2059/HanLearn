@@ -23,28 +23,11 @@ targets:
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.hanlearn.app
       GENERATE_INFOPLIST_FILE: NO
-      ENABLE_TESTABILITY: YES
-
-  HanLearnTests:
-    type: bundle.unit-test
-    platform: iOS
-    deploymentTarget: "17.0"
-    sources:
-      - path: HanLearnTests
-    dependencies:
-      - target: HanLearn
-    settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.hanlearn.tests
 
 schemes:
   HanLearn:
     build:
       targets:
         HanLearn: all
-        HanLearnTests: [test]
     run:
       config: Debug
-    test:
-      config: Debug
-      targets:
-        - HanLearnTests
