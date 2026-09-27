@@ -16,7 +16,22 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Build
-      run: swift build -v
-    - name: Run tests
-      run: swift test -v
+    - name: Install XcodeGen
+      run: |
+        if ! command -v xcodegen >/dev/null 2>&1; then
+          brew install xcodegen
+        fi
+    - name: Generate Xcode project
+      run: xcodegen generate
+    - name: Build and run tests
+      run: |
+        DESTINATION_ID=$(xcodebuild -project HanLearn.xcodeproj -scheme HanLearn -showdestinations | awk '/platform:iOS Simulator/ { if (match($0, /id:([A-F0-9-]+)/, m)) { print m[1]; exit } }')
+        if [ -z "$DESTINATION_ID" ]; then
+          echo "No iOS Simulator destination found for scheme HanLearn."
+          exit 1
+        fi
+
+        xcodebuild test \
+          -project HanLearn.xcodeproj \
+          -scheme HanLearn \
+          -destination "id=$DESTINATION_ID"
