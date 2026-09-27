@@ -31,8 +31,8 @@ targets:
     deploymentTarget: "17.0"
     sources:
       - path: HanLearnTests
-      - path: HanLearn/Services/SRSEngine.swift
-      - path: HanLearn/Services/StrokeOrderEngine.swift
+    dependencies:
+      - target: HanLearn
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.hanlearn.tests
 
@@ -44,15 +44,6 @@ schemes:
         HanLearnTests: [test]
     run:
       config: Debug
-    test:
-      config: Debug
-      targets:
-        - HanLearnTests
-
-  HanLearnTests:
-    build:
-      targets:
-        HanLearnTests: all
     test:
       config: Debug
       targets:

@@ -47,8 +47,12 @@ jobs:
           SIM_ID=$(xcrun simctl list devices available | grep -E "iPhone|iPad" | head -n 1 | grep -o -E "[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}")
           echo "Selected Simulator UUID: $SIM_ID"
           
+          # Boot simulator and wait for ready state
+          xcrun simctl boot $SIM_ID || true
+          xcrun simctl bootstatus $SIM_ID -b || true
+          
           xcodebuild test \
             -project HanLearn.xcodeproj \
-            -scheme HanLearnTests \
+            -scheme HanLearn \
             -destination "platform=iOS Simulator,id=$SIM_ID" \
             CODE_SIGNING_ALLOWED=NO
