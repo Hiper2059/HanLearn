@@ -3,7 +3,7 @@
 //  HanLearn
 //
 //  Created by Senior iOS Architect.
-//  App Entry Point: SwiftData ModelContainer, Onboarding Gate & 4-Tab Navigation
+//  App Entry Point: SwiftData ModelContainer, Onboarding Gate & 5-Tab Architecture
 //
 
 import SwiftUI
@@ -20,7 +20,8 @@ struct HanLearnApp: App {
             UserProgress.self,
             DailyTask.self,
             JournalEntry.self,
-            StudyDay.self
+            StudyDay.self,
+            UserMistake.self
         ])
         let isTesting = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: isTesting)
@@ -59,7 +60,6 @@ struct HanLearnApp: App {
         // Seed sample lesson if none exists
         let fetchDescriptor = FetchDescriptor<HSKLesson>()
         if let count = try? context.fetchCount(fetchDescriptor), count == 0 {
-            // Khởi tạo bài học mẫu đầu tiên
             let sampleLesson = HSKLesson(
                 hskLevel: 2,
                 title: "Đi siêu thị mua sắm (超市购物)",
@@ -112,13 +112,27 @@ struct HanLearnApp: App {
             sampleLesson.quizzes.append(quiz1)
             
             context.insert(sampleLesson)
-            try? context.save()
         }
+        
+        // Seed sample mistake if none exists (để người dùng thấy tính năng Sổ tay lỗi sai ngay)
+        let mistakeDescriptor = FetchDescriptor<UserMistake>()
+        if let count = try? context.fetchCount(mistakeDescriptor), count == 0 {
+            let sampleMistake = UserMistake(
+                questionType: "dictation",
+                hskLevel: 1,
+                promptText: "Nghe và chép chính tả: '我想买一个苹果。'",
+                targetAnswer: "我想买一个苹果",
+                userAnswer: "我想买一哥苹果",
+                explanation: "Lưu ý lượng từ '个' (gè), không dùng '哥' (gē)."
+            )
+            context.insert(sampleMistake)
+        }
+        
+        try? context.save()
     }
 }
 
 // MARK: - Root View (Onboarding Gate)
-
 struct RootView: View {
     @Query private var userProgressList: [UserProgress]
     
@@ -135,8 +149,7 @@ struct RootView: View {
     }
 }
 
-// MARK: - Main 4-Tab Navigation
-
+// MARK: - Main 5-Tab Navigation (Golden Senior iOS Architecture)
 struct MainTabView: View {
     var body: some View {
         TabView {
@@ -145,19 +158,24 @@ struct MainTabView: View {
                     Label("Hôm nay", systemImage: "house.fill")
                 }
             
+            PracticeZoneView()
+                .tabItem {
+                    Label("Tự Check", systemImage: "checkmark.seal.fill")
+                }
+            
             ReviewQueueView()
                 .tabItem {
                     Label("Ôn tập", systemImage: "rectangle.stack.fill")
                 }
             
-            HanProgressView()
+            ExamAndMistakeView()
                 .tabItem {
-                    Label("Tiến độ", systemImage: "chart.bar.fill")
+                    Label("Sổ Lỗi & Thi", systemImage: "bookmark.fill")
                 }
             
-            JournalView()
+            ProgressAndBackupView()
                 .tabItem {
-                    Label("Nhật ký", systemImage: "note.text")
+                    Label("Tiến độ", systemImage: "chart.bar.fill")
                 }
         }
         .tint(HanTheme.jadeGreen)

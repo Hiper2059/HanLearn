@@ -2,8 +2,9 @@
 //  HomeView.swift
 //  HanLearn
 //
-//  The centerpiece "What do I do today?" screen.
-//  Shows today's generated tasks, SRS due alert, streak, and quick actions.
+//  Created by Senior iOS Architect.
+//  Epic 1 & 4: Màn hình trung tâm "Hôm nay" - Zero-Friction (Không cần đăng nhập, 100% Offline)
+//  Tích hợp Lộ trình HSK 1 - 5, Thống kê 3 chỉ số, Cảnh báo SRS, Phím tắt 4 Core Epics và Bài tập hôm nay
 //
 
 import SwiftUI
@@ -14,29 +15,33 @@ public struct HomeView: View {
     @Query(sort: \DailyTask.sortOrder) private var allTasks: [DailyTask]
     @Query private var userProgressList: [UserProgress]
     @Query private var allWords: [HSKWord]
+    @Query private var allMistakes: [UserMistake]
     
     @State private var showingQuickAdd: Bool = false
     @State private var showingLessonBrowser: Bool = false
-    @State private var todaysTasks: [DailyTask] = []
+    @State private var showingPracticeZone: Bool = false
+    @State private var showingExamAndMistakes: Bool = false
     
     private var progress: UserProgress {
         userProgressList.first ?? UserProgress()
     }
     
-    /// Tasks for today (anchored to device local day)
     private var tasksForToday: [DailyTask] {
         let startOfToday = Calendar.current.startOfDay(for: Date())
         return allTasks.filter { $0.date >= startOfToday }
             .sorted { $0.sortOrder < $1.sortOrder }
     }
     
-    /// Number of SRS-due words right now
     private var srsReviewsDue: Int {
         let now = Date()
         return allWords.filter { word in
             guard let nextReview = word.nextReviewAt else { return false }
             return nextReview <= now
         }.count
+    }
+    
+    private var unresolvedMistakesCount: Int {
+        allMistakes.filter { !$0.isResolved }.count
     }
     
     private var completedCount: Int {
@@ -54,29 +59,26 @@ public struct HomeView: View {
             ZStack {
                 Color.black.ignoresSafeArea()
                 
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 20) {
-                        // ── Greeting & Streak Header ──
+                        // 1. Greeting & Streak Header
                         headerSection
                         
-                        // ── Catch-up Banner (if 3+ missed days) ──
-                        if progress.needsCatchUp {
-                            catchUpBanner
-                        }
-                        
-                        // ── Today's Summary Card ──
+                        // 2. Today's Summary (3 Cột: Bài tập / Phút / Từ vựng)
                         todaySummaryCard
                         
-                        // ── SRS Alert Card ──
+                        // 3. SRS Alert Banner (Nếu có từ đến hạn)
                         if srsReviewsDue > 0 {
-                            srsAlertCard
+                            NavigationLink(destination: ReviewQueueView()) {
+                                srsAlertCard
+                            }
                         }
                         
-                        // ── Task List ──
-                        taskListSection
+                        // 4. Quick Action Hub (4 Cụm Tính Năng Core)
+                        quickFeaturesSection
                         
-                        // ── Quick Actions ──
-                        quickActionsSection
+                        // 5. Bài Tập Hôm Nay
+                        taskListSection
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 40)
@@ -86,9 +88,12 @@ public struct HomeView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: { showingQuickAdd = true }) {
+                    Button(action: {
+                        showingQuickAdd = true
+                        HapticManager.shared.buttonTapped()
+                    }) {
                         Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 22))
+                            .font(.system(size: 24))
                             .foregroundColor(HanTheme.jadeGreen)
                     }
                     .accessibilityLabel("Thêm từ vựng mới")
@@ -100,6 +105,12 @@ public struct HomeView: View {
             .sheet(isPresented: $showingLessonBrowser) {
                 HSKHubView()
             }
+            .sheet(isPresented: $showingPracticeZone) {
+                PracticeZoneView()
+            }
+            .sheet(isPresented: $showingExamAndMistakes) {
+                ExamAndMistakeView()
+            }
             .onAppear {
                 generateTodaysTasks()
                 progress.recordDailyActivity()
@@ -108,18 +119,17 @@ public struct HomeView: View {
         }
     }
     
-    // MARK: - Header
-    
+    // MARK: - 1. HEADER SECTION
     private var headerSection: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(greetingText)
-                    .font(.hanBody(size: 15))
-                    .foregroundColor(.gray)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.85))
                 
                 Text(formattedDate)
                     .font(.system(size: 13))
-                    .foregroundColor(.gray.opacity(0.7))
+                    .foregroundColor(.white.opacity(0.55))
             }
             
             Spacer()
@@ -130,106 +140,76 @@ public struct HomeView: View {
                     .foregroundColor(.orange)
                     .font(.system(size: 16))
                 Text("\(progress.currentStreak)")
-                    .font(.hanTitle(size: 18))
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundColor(.orange)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
-            .background(Color.orange.opacity(0.12))
+            .background(Color.orange.opacity(0.14))
             .cornerRadius(20)
-            .accessibilityLabel("Chuỗi học \(progress.currentStreak) ngày liên tiếp")
         }
     }
     
-    // MARK: - Catch-up Banner
-    
-    private var catchUpBanner: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "hand.wave.fill")
-                .font(.system(size: 28))
-                .foregroundColor(HanTheme.silkGold)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Chào mừng bạn trở lại! 💪")
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(.white)
-                Text("Chúng tôi đã giới hạn bài ôn để bạn không bị quá tải. Hãy học nhẹ nhàng nhé!")
-                    .font(.system(size: 12))
-                    .foregroundColor(.gray)
-            }
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            LinearGradient(
-                colors: [HanTheme.silkGold.opacity(0.12), Color.clear],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-        )
-        .cornerRadius(14)
-    }
-    
-    // MARK: - Today's Summary
-    
+    // MARK: - 2. TODAY'S SUMMARY (3 CỘT)
     private var todaySummaryCard: some View {
         HStack(spacing: 0) {
             summaryItem(
-                value: "\(completedCount)/\(tasksForToday.count)",
+                value: "\(completedCount)/\(max(1, tasksForToday.count))",
                 label: "Bài tập",
                 icon: "checkmark.circle",
                 color: HanTheme.jadeGreen
             )
             
             Divider()
-                .frame(height: 36)
-                .background(Color.white.opacity(0.1))
+                .frame(height: 38)
+                .background(Color.white.opacity(0.12))
             
             summaryItem(
-                value: "\(totalMinutesEstimated)",
+                value: "\(max(15, totalMinutesEstimated))",
                 label: "Phút",
                 icon: "clock",
                 color: HanTheme.silkGold
             )
             
             Divider()
-                .frame(height: 36)
-                .background(Color.white.opacity(0.1))
+                .frame(height: 38)
+                .background(Color.white.opacity(0.12))
             
             summaryItem(
-                value: "\(progress.totalWordsLearned)",
+                value: "\(allWords.count)",
                 label: "Từ vựng",
                 icon: "character.book.closed",
                 color: HanTheme.vermilionRed
             )
         }
         .padding(.vertical, 16)
-        .background(Color.white.opacity(0.04))
-        .cornerRadius(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(red: 0.11, green: 0.12, blue: 0.15))
+        )
     }
     
     private func summaryItem(value: String, label: String, icon: String, color: Color) -> some View {
         VStack(spacing: 6) {
             Image(systemName: icon)
-                .font(.system(size: 16))
+                .font(.system(size: 17))
                 .foregroundColor(color)
             Text(value)
-                .font(.hanTitle(size: 20))
+                .font(.system(size: 20, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
             Text(label)
                 .font(.system(size: 11))
-                .foregroundColor(.gray)
+                .foregroundColor(.white.opacity(0.6))
         }
         .frame(maxWidth: .infinity)
     }
     
-    // MARK: - SRS Alert
-    
+    // MARK: - 3. SRS ALERT BANNER
     private var srsAlertCard: some View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(HanTheme.silkGold.opacity(0.15))
+                    .fill(HanTheme.silkGold.opacity(0.18))
                     .frame(width: 44, height: 44)
                 Image(systemName: "bell.badge.fill")
                     .font(.system(size: 20))
@@ -242,7 +222,7 @@ public struct HomeView: View {
                     .foregroundColor(.white)
                 Text("Nhấn để bắt đầu ôn tập ngay")
                     .font(.system(size: 12))
-                    .foregroundColor(.gray)
+                    .foregroundColor(.white.opacity(0.65))
             }
             
             Spacer()
@@ -252,48 +232,168 @@ public struct HomeView: View {
                 .foregroundColor(HanTheme.silkGold)
         }
         .padding(14)
-        .background(HanTheme.silkGold.opacity(0.08))
-        .cornerRadius(14)
-        .overlay(
+        .background(
             RoundedRectangle(cornerRadius: 14)
-                .stroke(HanTheme.silkGold.opacity(0.2), lineWidth: 1)
+                .fill(Color(red: 0.15, green: 0.12, blue: 0.08))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(HanTheme.silkGold.opacity(0.3), lineWidth: 1)
+                )
         )
     }
     
-    // MARK: - Task List
+    // MARK: - 4. QUICK FEATURES SECTION (4 CORE EPICS)
+    private var quickFeaturesSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("TRUNG TÂM LUYỆN TẬP")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(.white.opacity(0.55))
+            
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                // Feature 1: Máy Tự Check
+                Button(action: {
+                    showingPracticeZone = true
+                    HapticManager.shared.buttonTapped()
+                }) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "checkmark.seal.fill")
+                                .foregroundColor(HanTheme.jadeGreen)
+                                .font(.system(size: 22))
+                            Spacer()
+                            Text("CORE")
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundColor(HanTheme.jadeGreen)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(HanTheme.jadeGreen.opacity(0.2))
+                                .cornerRadius(4)
+                        }
+                        Text("Máy Tự Check")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(.white)
+                        Text("Nghe chép, Xếp câu, Đọc")
+                            .font(.system(size: 11))
+                            .foregroundColor(.white.opacity(0.6))
+                    }
+                    .padding(14)
+                    .background(Color(red: 0.10, green: 0.13, blue: 0.16))
+                    .cornerRadius(14)
+                }
+                
+                // Feature 2: Sổ Tay Lỗi Sai
+                Button(action: {
+                    showingExamAndMistakes = true
+                    HapticManager.shared.buttonTapped()
+                }) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "bookmark.fill")
+                                .foregroundColor(HanTheme.vermilionRed)
+                                .font(.system(size: 22))
+                            Spacer()
+                            if unresolvedMistakesCount > 0 {
+                                Text("\(unresolvedMistakesCount)")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 7)
+                                    .padding(.vertical, 2)
+                                    .background(HanTheme.vermilionRed)
+                                    .cornerRadius(10)
+                            }
+                        }
+                        Text("Sổ Tay Lỗi Sai")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(.white)
+                        Text("Luyện lại đạt >= 80%")
+                            .font(.system(size: 11))
+                            .foregroundColor(.white.opacity(0.6))
+                    }
+                    .padding(14)
+                    .background(Color(red: 0.14, green: 0.10, blue: 0.12))
+                    .cornerRadius(14)
+                }
+                
+                // Feature 3: Thi Thử HSK 1 - 5
+                Button(action: {
+                    showingExamAndMistakes = true
+                    HapticManager.shared.buttonTapped()
+                }) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Image(systemName: "graduationcap.fill")
+                            .foregroundColor(HanTheme.silkGold)
+                            .font(.system(size: 22))
+                        Text("Thi Thử HSK")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(.white)
+                        Text("Đề chuẩn HSK 1 - 5")
+                            .font(.system(size: 11))
+                            .foregroundColor(.white.opacity(0.6))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(14)
+                    .background(Color(red: 0.14, green: 0.13, blue: 0.10))
+                    .cornerRadius(14)
+                }
+                
+                // Feature 4: Giáo Trình 72 Tiết
+                Button(action: {
+                    showingLessonBrowser = true
+                    HapticManager.shared.buttonTapped()
+                }) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Image(systemName: "books.vertical.fill")
+                            .foregroundColor(Color.blue)
+                            .font(.system(size: 22))
+                        Text("Giáo Trình")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(.white)
+                        Text("72 Tiết học tích hợp")
+                            .font(.system(size: 11))
+                            .foregroundColor(.white.opacity(0.6))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(14)
+                    .background(Color(red: 0.10, green: 0.12, blue: 0.18))
+                    .cornerRadius(14)
+                }
+            }
+        }
+    }
     
+    // MARK: - 5. TASK LIST SECTION
     private var taskListSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("BÀI TẬP HÔM NAY")
                     .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(.gray)
+                    .foregroundColor(.white.opacity(0.55))
                 
                 Spacer()
                 
                 if !tasksForToday.isEmpty {
                     Text("\(completedCount)/\(tasksForToday.count) hoàn thành")
                         .font(.system(size: 12))
-                        .foregroundColor(completedCount == tasksForToday.count ? HanTheme.jadeGreen : .gray)
+                        .foregroundColor(completedCount == tasksForToday.count ? HanTheme.jadeGreen : .white.opacity(0.6))
                 }
             }
             
             if tasksForToday.isEmpty {
-                // Empty state
-                VStack(spacing: 14) {
+                VStack(spacing: 12) {
                     Image(systemName: "sparkles")
-                        .font(.system(size: 44))
-                        .foregroundStyle(HanTheme.primaryGradient)
+                        .font(.system(size: 36))
+                        .foregroundColor(HanTheme.silkGold)
                     Text("Chưa có bài tập nào cho hôm nay")
-                        .font(.hanBody(size: 15))
-                        .foregroundColor(.gray)
-                    Text("Thêm từ vựng mới hoặc duyệt bài học để bắt đầu!")
-                        .font(.system(size: 13))
-                        .foregroundColor(.gray.opacity(0.7))
-                        .multilineTextAlignment(.center)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.white)
+                    Text("Nhấn vào 'Máy Tự Check' hoặc duyệt bài học để rèn luyện!")
+                        .font(.system(size: 12))
+                        .foregroundColor(.white.opacity(0.6))
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 30)
+                .padding(.vertical, 24)
+                .background(Color.white.opacity(0.04))
+                .cornerRadius(14)
             } else {
                 ForEach(tasksForToday) { task in
                     DailyTaskRow(task: task, onComplete: {
@@ -304,54 +404,7 @@ public struct HomeView: View {
         }
     }
     
-    // MARK: - Quick Actions
-    
-    private var quickActionsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("HÀNH ĐỘNG NHANH")
-                .font(.system(size: 12, weight: .bold))
-                .foregroundColor(.gray)
-            
-            HStack(spacing: 12) {
-                quickActionButton(
-                    icon: "plus.app.fill",
-                    title: "Thêm từ",
-                    color: HanTheme.jadeGreen,
-                    action: { showingQuickAdd = true }
-                )
-                
-                quickActionButton(
-                    icon: "books.vertical.fill",
-                    title: "Duyệt bài",
-                    color: HanTheme.silkGold,
-                    action: { showingLessonBrowser = true }
-                )
-            }
-        }
-    }
-    
-    private func quickActionButton(icon: String, title: String, color: Color, action: @escaping () -> Void) -> some View {
-        Button(action: {
-            HapticManager.shared.buttonTapped()
-            action()
-        }) {
-            HStack(spacing: 10) {
-                Image(systemName: icon)
-                    .font(.system(size: 18))
-                    .foregroundColor(color)
-                Text(title)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(color.opacity(0.1))
-            .cornerRadius(12)
-        }
-    }
-    
     // MARK: - Helpers
-    
     private var greetingText: String {
         let hour = Calendar.current.component(.hour, from: Date())
         if hour < 12 { return "Chào buổi sáng! ☀️" }
@@ -375,7 +428,6 @@ public struct HomeView: View {
     }
     
     private func updateStudyDay() {
-        // Update or create StudyDay for today
         let startOfToday = Calendar.current.startOfDay(for: Date())
         let descriptor = FetchDescriptor<StudyDay>(
             predicate: #Predicate<StudyDay> { day in

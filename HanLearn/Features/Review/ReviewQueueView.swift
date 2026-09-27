@@ -2,8 +2,9 @@
 //  ReviewQueueView.swift
 //  HanLearn
 //
-//  Full-screen SRS flashcard review queue.
-//  Shows cards due for review, tracks session progress, and shows summary.
+//  Created by Senior iOS Architect.
+//  Epic 2: Ôn Tập Từ Vựng SRS (SuperMemo-2) & Rich Flashcard
+//  Clean Native iOS UX: Không tràn thanh TabBar, thanh tiến độ mềm mại, chấm điểm tức thì
 //
 
 import SwiftUI
@@ -29,7 +30,7 @@ public struct ReviewQueueView: View {
     public var body: some View {
         NavigationStack {
             ZStack {
-                Color.black.ignoresSafeArea()
+                Color(red: 0.05, green: 0.06, blue: 0.09).ignoresSafeArea()
                 
                 if reviewQueue.isEmpty && !isSessionComplete {
                     emptyStateView
@@ -39,11 +40,14 @@ public struct ReviewQueueView: View {
                     reviewSessionView
                 }
             }
-            .navigationTitle("Ôn tập")
+            .navigationTitle("Ôn Tập Từ Vựng")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: { showingQuickAdd = true }) {
+                    Button(action: {
+                        showingQuickAdd = true
+                        HapticManager.shared.buttonTapped()
+                    }) {
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 20))
                             .foregroundColor(HanTheme.jadeGreen)
@@ -60,100 +64,128 @@ public struct ReviewQueueView: View {
         }
     }
     
-    // MARK: - Empty State
-    
+    // MARK: - EMPTY STATE
     private var emptyStateView: some View {
         VStack(spacing: 20) {
-            Image(systemName: "tray.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(HanTheme.primaryGradient)
+            Image(systemName: "checkmark.circle.badge.questionmark.fill")
+                .font(.system(size: 58))
+                .foregroundColor(HanTheme.jadeGreen)
             
-            Text("Chưa có từ vựng nào cần ôn!")
-                .font(.hanTitle(size: 22))
+            Text("Không có từ vựng cần ôn!")
+                .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.white)
-                .multilineTextAlignment(.center)
             
-            Text("Thêm từ mới để bắt đầu luyện tập\nhoặc quay lại khi có từ đến hạn ôn 📚")
-                .font(.hanBody(size: 14))
-                .foregroundColor(.gray)
+            Text("Tuyệt vời! Bạn đã hoàn thành tất cả các thẻ ôn tập hôm nay.\nThêm từ mới hoặc thư giãn nhé! ✨")
+                .font(.system(size: 14))
+                .foregroundColor(.white.opacity(0.6))
                 .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
             
-            Button(action: { showingQuickAdd = true }) {
+            Button(action: {
+                showingQuickAdd = true
+                HapticManager.shared.buttonTapped()
+            }) {
                 HStack(spacing: 8) {
                     Image(systemName: "plus.circle.fill")
-                    Text("Thêm từ vựng đầu tiên")
+                    Text("Thêm Từ Vựng Mới")
                 }
-                .font(.hanBody(size: 16))
-                .bold()
+                .font(.system(size: 15, weight: .bold))
                 .foregroundColor(.black)
-                .frame(maxWidth: 260)
-                .padding(.vertical, 14)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
                 .background(HanTheme.jadeGreen)
-                .cornerRadius(14)
+                .cornerRadius(12)
             }
             .padding(.top, 10)
         }
         .padding(30)
     }
     
-    // MARK: - Review Session
-    
+    // MARK: - REVIEW SESSION
     private var reviewSessionView: some View {
-        VStack(spacing: 16) {
-            // Progress bar
+        VStack(spacing: 12) {
+            // Thanh tiến độ phiên học
             VStack(spacing: 6) {
-                ProgressView(value: Double(currentIndex), total: Double(reviewQueue.count))
-                    .tint(HanTheme.jadeGreen)
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(Color.white.opacity(0.1))
+                            .frame(height: 5)
+                        
+                        let progressVal = reviewQueue.isEmpty ? 0 : CGFloat(currentIndex) / CGFloat(reviewQueue.count)
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(HanTheme.jadeGreen)
+                            .frame(width: geo.size.width * progressVal, height: 5)
+                    }
+                }
+                .frame(height: 5)
                 
                 HStack {
                     Text("Thẻ \(currentIndex + 1) / \(reviewQueue.count)")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.gray)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.7))
                     
                     Spacer()
                     
-                    HStack(spacing: 8) {
-                        Label("\(sessionStats.correct)", systemImage: "checkmark.circle")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(HanTheme.jadeGreen)
-                        Label("\(sessionStats.again)", systemImage: "arrow.counterclockwise")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(HanTheme.vermilionRed)
+                    HStack(spacing: 10) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(HanTheme.jadeGreen)
+                            Text("\(sessionStats.correct)")
+                                .foregroundColor(.white)
+                        }
+                        .font(.system(size: 12, weight: .bold))
+                        
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.counterclockwise.circle.fill")
+                                .foregroundColor(HanTheme.vermilionRed)
+                            Text("\(sessionStats.again)")
+                                .foregroundColor(.white)
+                        }
+                        .font(.system(size: 12, weight: .bold))
                     }
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
             
-            // Flashcard
+            Spacer(minLength: 6)
+            
+            // Thẻ Flashcard chính
             if currentIndex < reviewQueue.count {
-                FlashcardView(word: reviewQueue[currentIndex]) { grade in
+                FlashcardView(
+                    word: reviewQueue[currentIndex],
+                    cardIndex: currentIndex + 1,
+                    totalCards: reviewQueue.count
+                ) { grade in
                     processGrade(grade)
                 }
                 .padding(.horizontal, 16)
-                .id(currentIndex) // Force recreation on index change
+                .id(currentIndex)
             }
+            
+            Spacer(minLength: 12)
         }
+        .padding(.bottom, 8)
     }
     
-    // MARK: - Session Summary
-    
+    // MARK: - SESSION SUMMARY
     private var sessionSummaryView: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 22) {
             Image(systemName: "trophy.fill")
-                .font(.system(size: 64))
+                .font(.system(size: 60))
                 .foregroundColor(HanTheme.silkGold)
             
-            Text("Ôn tập hoàn thành! 🎉")
-                .font(.hanTitle(size: 24))
+            Text("Hoàn Thành Ôn Tập! 🎉")
+                .font(.system(size: 24, weight: .bold))
                 .foregroundColor(.white)
             
-            // Stats grid
-            VStack(spacing: 16) {
-                HStack(spacing: 16) {
-                    statCard(value: "\(sessionStats.total)", label: "Tổng thẻ", color: .white)
+            VStack(spacing: 12) {
+                HStack(spacing: 12) {
+                    statCard(value: "\(sessionStats.total)", label: "Tổng số thẻ", color: .white)
                     statCard(value: "\(sessionStats.correct)", label: "Nhớ tốt", color: HanTheme.jadeGreen)
                 }
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     statCard(value: "\(sessionStats.again)", label: "Cần ôn lại", color: HanTheme.vermilionRed)
                     statCard(value: "\(sessionStats.mastered)", label: "Thuộc lòng", color: HanTheme.silkGold)
                 }
@@ -161,43 +193,41 @@ public struct ReviewQueueView: View {
             .padding(.horizontal, 20)
             
             Button(action: {
-                // Reset and check for newly due cards
                 isSessionComplete = false
                 currentIndex = 0
                 sessionStats = SessionStats()
                 loadReviewQueue()
             }) {
-                Text("Xong")
-                    .font(.hanBody(size: 16))
-                    .bold()
+                Text("Xong & Về Trang Chủ")
+                    .font(.system(size: 16, weight: .bold))
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                     .background(HanTheme.jadeGreen)
                     .cornerRadius(14)
             }
-            .padding(.horizontal, 40)
+            .padding(.horizontal, 30)
+            .padding(.top, 10)
         }
         .padding(20)
     }
     
     private func statCard(value: String, label: String, color: Color) -> some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 4) {
             Text(value)
-                .font(.hanTitle(size: 28))
+                .font(.system(size: 26, weight: .bold, design: .rounded))
                 .foregroundColor(color)
             Text(label)
-                .font(.system(size: 12))
-                .foregroundColor(.gray)
+                .font(.system(size: 11))
+                .foregroundColor(.white.opacity(0.6))
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(Color.white.opacity(0.05))
-        .cornerRadius(14)
+        .padding(.vertical, 14)
+        .background(Color.white.opacity(0.06))
+        .cornerRadius(12)
     }
     
-    // MARK: - Logic
-    
+    // MARK: - LOGIC
     private func loadReviewQueue() {
         let now = Date()
         var dueWords = allWords.filter { word in
@@ -205,14 +235,16 @@ public struct ReviewQueueView: View {
             return nextReview <= now
         }
         
-        // Cap for catch-up mode
+        // Nếu không có từ nào đến hạn, lấy tối đa 5 từ bất kỳ để người dùng luôn có thể luyện tập
+        if dueWords.isEmpty && !allWords.isEmpty {
+            dueWords = Array(allWords.prefix(5))
+        }
+        
         if progress.needsCatchUp && dueWords.count > SRSEngine.catchUpQueueCap {
-            // Prioritize by oldest due date
             dueWords.sort { ($0.nextReviewAt ?? .distantPast) < ($1.nextReviewAt ?? .distantPast) }
             dueWords = Array(dueWords.prefix(SRSEngine.catchUpQueueCap))
         }
         
-        // Shuffle for variety
         reviewQueue = dueWords.shuffled()
         currentIndex = 0
         isSessionComplete = false
@@ -220,10 +252,8 @@ public struct ReviewQueueView: View {
     
     private func processGrade(_ grade: SRSGrade) {
         guard currentIndex < reviewQueue.count else { return }
-        
         let word = reviewQueue[currentIndex]
         
-        // Apply SRS algorithm
         let result = SRSEngine.processReview(
             grade: grade,
             currentRepetitionCount: word.srsRepetitionCount,
@@ -234,14 +264,11 @@ public struct ReviewQueueView: View {
         
         SRSEngine.applyResult(result, to: word)
         
-        // Update session stats
         sessionStats.total += 1
         switch grade {
         case .again:
             sessionStats.again += 1
-        case .hard:
-            sessionStats.correct += 1
-        case .good:
+        case .hard, .good:
             sessionStats.correct += 1
         case .easy:
             sessionStats.correct += 1
@@ -252,8 +279,7 @@ public struct ReviewQueueView: View {
         
         try? modelContext.save()
         
-        // Advance to next card or complete
-        withAnimation(.easeInOut(duration: 0.3)) {
+        withAnimation(.easeInOut(duration: 0.25)) {
             if currentIndex + 1 >= reviewQueue.count {
                 isSessionComplete = true
                 updateStudyDayAfterReview()
@@ -283,8 +309,6 @@ public struct ReviewQueueView: View {
         try? modelContext.save()
     }
 }
-
-// MARK: - Session Stats
 
 private struct SessionStats {
     var total: Int = 0
