@@ -359,7 +359,8 @@ struct AutoDictationModule: View {
             HapticManager.shared.answerCorrect()
             correctStreak += 1
             if let prog = userProgressList.first {
-                prog.recordActivity(xpGained: 20, wordsLearned: 0, reviewsCompleted: 1)
+                prog.recordDailyActivity()
+                prog.totalXP += 20
             }
             if correctStreak % 5 == 0 {
                 showCelebration = true
@@ -580,7 +581,8 @@ struct SentenceBuilderModule: View {
         if isCorrect {
             HapticManager.shared.answerCorrect()
             if let prog = userProgressList.first {
-                prog.recordActivity(xpGained: 15, wordsLearned: 0, reviewsCompleted: 1)
+                prog.recordDailyActivity()
+                prog.totalXP += 15
             }
         } else {
             HapticManager.shared.answerWrong()
@@ -731,46 +733,3 @@ struct ReadingTranslateModule: View {
     }
 }
 
-// Layout helper for flow tags
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-    
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let width = proposal.width ?? 0
-        var height: CGFloat = 0
-        var x: CGFloat = 0
-        var y: CGFloat = 0
-        var maxHeight: CGFloat = 0
-        
-        for view in subviews {
-            let size = view.sizeThatFits(.unspecified)
-            if x + size.width > width {
-                x = 0
-                y += maxHeight + spacing
-                maxHeight = 0
-            }
-            maxHeight = max(maxHeight, size.height)
-            x += size.width + spacing
-        }
-        height = y + maxHeight
-        return CGSize(width: width, height: height)
-    }
-    
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var x = bounds.minX
-        var y = bounds.minY
-        var maxHeight: CGFloat = 0
-        
-        for view in subviews {
-            let size = view.sizeThatFits(.unspecified)
-            if x + size.width > bounds.maxX {
-                x = bounds.minX
-                y += maxHeight + spacing
-                maxHeight = 0
-            }
-            view.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
-            maxHeight = max(maxHeight, size.height)
-            x += size.width + spacing
-        }
-    }
-}

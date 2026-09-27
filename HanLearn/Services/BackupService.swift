@@ -116,9 +116,9 @@ public struct BackupService {
                     sinoVietnamese: w.sinoVietnamese,
                     vietnameseMeaning: w.vietnameseMeaning,
                     hskLevel: w.hskLevel,
-                    masteryPercentage: w.masteryPercentage,
                     srsRepetitionCount: w.srsRepetitionCount,
-                    srsIntervalDays: w.srsIntervalDays
+                    srsIntervalDays: w.srsIntervalDays,
+                    masteryPercentage: w.masteryPercentage
                 )
                 modelContext.insert(newWord)
             }
