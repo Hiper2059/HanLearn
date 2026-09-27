@@ -14,11 +14,12 @@ public struct HSKHubView: View {
     @Query(sort: \HSKLesson.createdAt, order: .reverse) private var lessons: [HSKLesson]
     @Query private var userProgressList: [UserProgress]
     
-    @State private var selectedLevel: Int = 2
+    @State private var selectedLevel: Int = 1
     @State private var topicSearchText: String = ""
     @State private var isGenerating: Bool = false
     @State private var activeLessonForDetail: HSKLesson?
     @State private var activeLessonForQuiz: HSKLesson?
+    @State private var activeLessonForStudy: HSKLesson?
     
     public init() {}
     
@@ -45,13 +46,16 @@ public struct HSKHubView: View {
                     .padding(.bottom, 40)
                 }
             }
-            .navigationTitle("HanLearn HSK 3.0")
+            .navigationTitle("Giáo Trình HSK 3.0")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(item: $activeLessonForDetail) { lesson in
                 LessonDetailView(lesson: lesson)
             }
             .sheet(item: $activeLessonForQuiz) { lesson in
                 TopicQuizView(lesson: lesson)
+            }
+            .fullScreenCover(item: $activeLessonForStudy) { lesson in
+                InteractiveLessonStudyView(lesson: lesson)
             }
         }
     }
@@ -185,12 +189,14 @@ public struct HSKHubView: View {
                     .foregroundColor(HanTheme.jadeGreen)
             }
             
-            if lessons.isEmpty {
+            let filteredLessons = lessons.filter { $0.hskLevel == selectedLevel }
+            
+            if filteredLessons.isEmpty {
                 VStack(spacing: 12) {
                     Image(systemName: "books.vertical.fill")
                         .font(.system(size: 40))
                         .foregroundColor(.gray.opacity(0.5))
-                    Text("Chưa có bài học nào được lưu.\nHãy nhập chủ đề ở trên và bấm tạo tự động!")
+                    Text("Chưa có bài học nào cho HSK \(selectedLevel).\nHãy tạo bài học mới hoặc chọn cấp độ khác!")
                         .font(.hanBody(size: 14))
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
@@ -198,7 +204,7 @@ public struct HSKHubView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 30)
             } else {
-                ForEach(lessons) { lesson in
+                ForEach(filteredLessons) { lesson in
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
                             Text(lesson.levelBadge)
@@ -229,19 +235,35 @@ public struct HSKHubView: View {
                             .foregroundColor(.gray)
                             .lineLimit(2)
                         
-                        HStack(spacing: 12) {
+                        HStack(spacing: 8) {
+                            Button(action: {
+                                activeLessonForStudy = lesson
+                                HapticManager.shared.buttonTapped()
+                            }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "play.circle.fill")
+                                    Text("Học 3 Bước")
+                                }
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(.black)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 7)
+                                .background(HanTheme.jadeGreen)
+                                .cornerRadius(8)
+                            }
+                            
                             Button(action: {
                                 activeLessonForDetail = lesson
                             }) {
                                 HStack(spacing: 4) {
                                     Image(systemName: "book.fill")
-                                    Text("Xem Bài Học")
+                                    Text("Chi Tiết")
                                 }
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(.white)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(HanTheme.jadeGreen)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 7)
+                                .background(Color.white.opacity(0.12))
                                 .cornerRadius(8)
                             }
                             
@@ -249,13 +271,13 @@ public struct HSKHubView: View {
                                 activeLessonForQuiz = lesson
                             }) {
                                 HStack(spacing: 4) {
-                                    Image(systemName: "play.circle.fill")
-                                    Text("Luyện Tập Quiz")
+                                    Image(systemName: "checkmark.circle.fill")
+                                    Text("Quiz")
                                 }
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(HanTheme.silkGold)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 7)
                                 .background(HanTheme.silkGold.opacity(0.15))
                                 .cornerRadius(8)
                             }

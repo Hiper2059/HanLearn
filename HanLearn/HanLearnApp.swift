@@ -57,61 +57,57 @@ struct HanLearnApp: App {
             context.insert(UserProgress())
         }
         
-        // Seed sample lesson if none exists
+        // Seed SHZ HSK 3.0 Curriculum if lessons count < 4
         let fetchDescriptor = FetchDescriptor<HSKLesson>()
-        if let count = try? context.fetchCount(fetchDescriptor), count == 0 {
-            let sampleLesson = HSKLesson(
-                hskLevel: 2,
-                title: "Đi siêu thị mua sắm (超市购物)",
-                topic: "Mua sắm & Đời sống",
-                summary: "Học các từ vựng mua sắm, hỏi giá, giảm giá và cấu trúc hỏi giá trong tiếng Trung.",
-                grammarExplanation: "Cấu trúc hỏi giá: '这件 / 这个 + Danh từ + 多少钱？'\nVí dụ: 这个苹果多少钱？(Quả táo này bao nhiêu tiền?).",
-                dialogueChinese: "你好，请问这个苹果多少钱一斤？\n五块钱一斤，很甜的。\n太贵了，可以便宜一点吗？\n给你打九折吧。",
-                dialoguePinyin: "Nǐ hǎo, qǐngwèn zhège píngguǒ duōshao qián yì jīn?\nWǔ kuài qián yì jīn, hěn tián de.\nTài guì le, kěyǐ piányi yìdiǎn ma?\nGěi nǐ dǎ jiǔ zhé ba.",
-                dialogueVietnamese: "Xin chào, cho hỏi táo này bao nhiêu tiền một cân?\n5 tệ một cân, ngọt lắm ạ.\nĐắt quá, có thể rẻ hơn một chút không?\nGiảm giá cho bạn 10% (đánh 9折) nhé."
-            )
-            
-            let word1 = HSKWord(
-                hanzi: "苹果",
-                pinyin: "píngguǒ",
-                sinoVietnamese: "Bình quả",
-                vietnameseMeaning: "Quả táo",
-                hskLevel: 1,
-                exampleSentenceHanzi: "我想买苹果。",
-                exampleSentencePinyin: "Wǒ xiǎng mǎi píngguǒ.",
-                exampleSentenceTranslation: "Tôi muốn mua táo.",
-                strokeCount: 8
-            )
-            word1.lesson = sampleLesson
-            sampleLesson.vocabularyList.append(word1)
-            
-            let word2 = HSKWord(
-                hanzi: "便宜",
-                pinyin: "piányi",
-                sinoVietnamese: "Tiện nghi",
-                vietnameseMeaning: "Rẻ, giá cả phải chăng",
-                hskLevel: 2,
-                exampleSentenceHanzi: "这件衣服很便宜。",
-                exampleSentencePinyin: "Zhè jiàn yīfu hěn piányi.",
-                exampleSentenceTranslation: "Bộ đồ này rất rẻ.",
-                strokeCount: 11
-            )
-            word2.lesson = sampleLesson
-            sampleLesson.vocabularyList.append(word2)
-            
-            let quiz1 = HSKQuiz(
-                type: .multipleChoice,
-                promptText: "Từ '苹果' (píngguǒ) có nghĩa là gì?",
-                targetHanzi: "苹果",
-                targetPinyin: "píngguǒ",
-                optionsData: ["Quả táo", "Quả chuối", "Quả cam", "Quả dưa hấu"],
-                correctAnswer: "Quả táo",
-                explanation: "苹果 (píngguǒ) là quả táo, từ vựng cơ bản HSK 1."
-            )
-            quiz1.lesson = sampleLesson
-            sampleLesson.quizzes.append(quiz1)
-            
-            context.insert(sampleLesson)
+        let currentLessonCount = (try? context.fetchCount(fetchDescriptor)) ?? 0
+        if currentLessonCount < 4 {
+            for course in SHZCurriculumDatabase.allCourses {
+                for lessonData in course.lessons {
+                    let lesson = HSKLesson(
+                        hskLevel: course.level,
+                        title: lessonData.title,
+                        topic: lessonData.topic,
+                        summary: lessonData.summary,
+                        grammarExplanation: lessonData.grammarExplanation,
+                        dialogueChinese: lessonData.dialogueChinese,
+                        dialoguePinyin: lessonData.dialoguePinyin,
+                        dialogueVietnamese: lessonData.dialogueVietnamese
+                    )
+                    
+                    for w in lessonData.vocabulary {
+                        let word = HSKWord(
+                            hanzi: w.hanzi,
+                            pinyin: w.pinyin,
+                            sinoVietnamese: w.sinoVietnamese,
+                            vietnameseMeaning: w.vietnameseMeaning,
+                            hskLevel: course.level,
+                            exampleSentenceHanzi: w.exampleHanzi,
+                            exampleSentencePinyin: w.examplePinyin,
+                            exampleSentenceTranslation: w.exampleTranslation,
+                            strokeCount: w.strokeCount
+                        )
+                        word.lesson = lesson
+                        lesson.vocabularyList.append(word)
+                    }
+                    
+                    // Tạo bài tập trắc nghiệm nối từ
+                    if let firstWord = lessonData.vocabulary.first {
+                        let quiz = HSKQuiz(
+                            type: .multipleChoice,
+                            promptText: "Từ '\(firstWord.hanzi)' (\(firstWord.pinyin)) có nghĩa là gì?",
+                            targetHanzi: firstWord.hanzi,
+                            targetPinyin: firstWord.pinyin,
+                            optionsData: [firstWord.vietnameseMeaning, "Trường học", "Ngày mai", "Bác sĩ"],
+                            correctAnswer: firstWord.vietnameseMeaning,
+                            explanation: "\(firstWord.hanzi) mang nghĩa là \(firstWord.vietnameseMeaning)."
+                        )
+                        quiz.lesson = lesson
+                        lesson.quizzes.append(quiz)
+                    }
+                    
+                    context.insert(lesson)
+                }
+            }
         }
         
         // Seed sample mistake if none exists (để người dùng thấy tính năng Sổ tay lỗi sai ngay)

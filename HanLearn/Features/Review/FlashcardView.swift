@@ -3,8 +3,7 @@
 //  HanLearn
 //
 //  Created by Senior iOS Architect.
-//  Epic 2: Rich Flashcard (Mặt trước Chữ Hán Ô Mễ Tự Cách + Audio; Mặt sau Pinyin, Hán Việt, Nét viết & Ví dụ)
-//  Chuẩn Apple Human Interface Guidelines: Tỷ lệ vàng, không tràn viền TabBar, hiệu ứng 3D Spring Flip & SM-2
+//  Epic 2: Rich Flashcard - Mễ Tự Cách TianziGe + Phát âm bản xứ + Tập viết nét + Thu âm luyện nói + SM-2
 //
 
 import SwiftUI
@@ -17,6 +16,11 @@ public struct FlashcardView: View {
     
     @State private var isFlipped: Bool = false
     @State private var dragOffset: CGSize = .zero
+    @State private var showingStrokeCanvas: Bool = false
+    
+    // Voice check
+    @StateObject private var voiceEvaluator = AudioVoiceEvaluatorService.shared
+    @State private var voiceFeedback: String? = nil
     
     public init(
         word: HSKWord,
@@ -37,13 +41,13 @@ public struct FlashcardView: View {
                 .rotation3DEffect(.degrees(isFlipped ? 0 : -180), axis: (x: 0, y: 1, z: 0))
                 .opacity(isFlipped ? 1 : 0)
             
-            // Mặt trước (Ô Mễ Tự Cách, Badge HSK, Nút Audio, Hán tự)
+            // Mặt trước (Ô Mễ Tự Cách, Badge HSK, Nút Audio, Tập viết, Thu âm)
             cardFront
                 .rotation3DEffect(.degrees(isFlipped ? 180 : 0), axis: (x: 0, y: 1, z: 0))
                 .opacity(isFlipped ? 0 : 1)
         }
         .frame(maxWidth: 420)
-        .frame(height: 480)
+        .frame(height: 500)
         .offset(x: dragOffset.width * 0.4)
         .rotationEffect(.degrees(Double(dragOffset.width / 28)))
         .gesture(
@@ -53,11 +57,9 @@ public struct FlashcardView: View {
                 }
                 .onEnded { value in
                     if value.translation.width > 80 {
-                        // Vuốt phải -> Tốt
                         HapticManager.shared.answerCorrect()
                         onGrade(.good)
                     } else if value.translation.width < -80 {
-                        // Vuốt trái -> Ôn lại
                         HapticManager.shared.answerWrong()
                         onGrade(.again)
                     }
@@ -66,6 +68,9 @@ public struct FlashcardView: View {
                     }
                 }
         )
+        .sheet(isPresented: $showingStrokeCanvas) {
+            StrokeCanvasView(word: word)
+        }
     }
     
     // MARK: - MẶT TRƯỚC (FRONT)
@@ -93,44 +98,80 @@ public struct FlashcardView: View {
                     .foregroundColor(.white.opacity(0.5))
             }
             .padding(.horizontal, 22)
-            .padding(.top, 20)
+            .padding(.top, 18)
             
             Spacer()
             
             // Ô Mễ Tự Cách (Tianzi Ge) truyền thống
             TianziGeView(
                 character: word.hanzi,
-                size: 190,
+                size: 180,
                 showGrid: true,
                 gridColor: Color(red: 0.88, green: 0.35, blue: 0.30).opacity(0.45),
                 textColor: .white
             )
             .shadow(color: Color.black.opacity(0.5), radius: 16, y: 8)
             
+            if let feedback = voiceFeedback {
+                Text(feedback)
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(HanTheme.silkGold)
+                    .padding(.top, 8)
+            }
+            
             Spacer()
             
-            // Nút phát âm bản xứ
-            Button(action: {
-                SoundManager.shared.speakMandarin(word.hanzi)
-                HapticManager.shared.buttonTapped()
-            }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "speaker.wave.3.fill")
-                        .font(.system(size: 15))
-                    Text("Nghe phát âm")
-                        .font(.system(size: 15, weight: .semibold))
+            // 3 Nút Hành Động: Phát âm, Tập viết, Thu âm
+            HStack(spacing: 10) {
+                // 1. Nút phát âm
+                Button(action: {
+                    SoundManager.shared.speakMandarin(word.hanzi)
+                    HapticManager.shared.buttonTapped()
+                }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "speaker.wave.3.fill")
+                        Text("Phát âm")
+                    }
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(HanTheme.jadeGreen)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(HanTheme.jadeGreen.opacity(0.15))
+                    .cornerRadius(12)
                 }
-                .foregroundColor(HanTheme.jadeGreen)
-                .padding(.horizontal, 22)
-                .padding(.vertical, 12)
-                .background(
-                    Capsule()
-                        .fill(HanTheme.jadeGreen.opacity(0.15))
-                        .overlay(
-                            Capsule()
-                                .stroke(HanTheme.jadeGreen.opacity(0.4), lineWidth: 1)
-                        )
-                )
+                
+                // 2. Nút Tập viết
+                Button(action: {
+                    showingStrokeCanvas = true
+                    HapticManager.shared.buttonTapped()
+                }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "pencil.tip.crop.circle")
+                        Text("Tập viết")
+                    }
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(HanTheme.silkGold)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(HanTheme.silkGold.opacity(0.15))
+                    .cornerRadius(12)
+                }
+                
+                // 3. Nút Thu âm nói thử
+                Button(action: {
+                    handleVoiceCheck()
+                }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: voiceEvaluator.isRecording ? "stop.fill" : "mic.fill")
+                        Text(voiceEvaluator.isRecording ? "Dừng" : "Nói thử")
+                    }
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(voiceEvaluator.isRecording ? HanTheme.vermilionRed : Color.blue)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background((voiceEvaluator.isRecording ? HanTheme.vermilionRed : Color.blue).opacity(0.15))
+                    .cornerRadius(12)
+                }
             }
             
             // Gợi ý chạm để lật
@@ -140,8 +181,8 @@ public struct FlashcardView: View {
             }
             .font(.system(size: 12, weight: .medium))
             .foregroundColor(.white.opacity(0.55))
-            .padding(.top, 14)
-            .padding(.bottom, 20)
+            .padding(.top, 12)
+            .padding(.bottom, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(cardBackgroundView)
@@ -235,7 +276,7 @@ public struct FlashcardView: View {
                                 .foregroundColor(.white.opacity(0.5))
                             
                             Text(word.exampleSentenceHanzi)
-                                .font(.system(size: 15, weight: .medium))
+                                .font(.system(size: 15, weight: .semibold))
                                 .foregroundColor(.white)
                             
                             Text(word.exampleSentencePinyin)
@@ -277,7 +318,6 @@ public struct FlashcardView: View {
         .background(cardBackgroundView)
     }
     
-    // Nút đánh giá SRS
     private func srsGradeButton(title: String, subtitle: String, grade: SRSGrade, color: Color) -> some View {
         Button(action: {
             onGrade(grade)
@@ -308,7 +348,6 @@ public struct FlashcardView: View {
         }
     }
     
-    // Nền thẻ Glassmorphism sang trọng
     private var cardBackgroundView: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 24)
@@ -334,5 +373,24 @@ public struct FlashcardView: View {
                 )
         }
         .shadow(color: Color.black.opacity(0.6), radius: 20, y: 10)
+    }
+    
+    private func handleVoiceCheck() {
+        if voiceEvaluator.isRecording {
+            let res = voiceEvaluator.stopRecordingAndEvaluate(targetHanzi: word.hanzi, targetPinyin: word.pinyin)
+            voiceFeedback = "Điểm: \(res.overallScore)/100 · \(res.isExactMatch ? "Chuẩn xác 🎉" : "Khá tốt 👍")"
+            HapticManager.shared.answerCorrect()
+        } else {
+            voiceFeedback = "Đang lắng nghe..."
+            Task {
+                let granted = await voiceEvaluator.requestPermissions()
+                if granted {
+                    try? voiceEvaluator.startRecording(targetHanzi: word.hanzi)
+                    HapticManager.shared.buttonTapped()
+                } else {
+                    voiceFeedback = "Vui lòng cấp quyền Micro trong Cài đặt"
+                }
+            }
+        }
     }
 }
