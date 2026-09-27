@@ -57,56 +57,59 @@ struct HanLearnApp: App {
             context.insert(UserProgress())
         }
         
-        // Seed SHZ HSK 3.0 Curriculum if lessons count < 4
+        // Seed SHZ HSK 3.0 Curriculum (tự động bổ sung các bài học và từ vựng mới)
         let fetchDescriptor = FetchDescriptor<HSKLesson>()
-        let currentLessonCount = (try? context.fetchCount(fetchDescriptor)) ?? 0
-        if currentLessonCount < 4 {
-            for course in SHZCurriculumDatabase.allCourses {
-                for lessonData in course.lessons {
-                    let lesson = HSKLesson(
+        let existingLessons = (try? context.fetch(fetchDescriptor)) ?? []
+        let existingTitles = Set(existingLessons.map { $0.title })
+        
+        for course in SHZCurriculumDatabase.allCourses {
+            for lessonData in course.lessons {
+                guard !existingTitles.contains(lessonData.title) else { continue }
+                
+                let lesson = HSKLesson(
+                    hskLevel: course.level,
+                    title: lessonData.title,
+                    topic: lessonData.topic,
+                    summary: lessonData.summary,
+                    grammarExplanation: lessonData.grammarExplanation,
+                    dialogueChinese: lessonData.dialogueChinese,
+                    dialoguePinyin: lessonData.dialoguePinyin,
+                    dialogueVietnamese: lessonData.dialogueVietnamese
+                )
+                
+                for w in lessonData.vocabulary {
+                    let word = HSKWord(
+                        hanzi: w.hanzi,
+                        pinyin: w.pinyin,
+                        sinoVietnamese: w.sinoVietnamese,
+                        vietnameseMeaning: w.vietnameseMeaning,
                         hskLevel: course.level,
-                        title: lessonData.title,
-                        topic: lessonData.topic,
-                        summary: lessonData.summary,
-                        grammarExplanation: lessonData.grammarExplanation,
-                        dialogueChinese: lessonData.dialogueChinese,
-                        dialoguePinyin: lessonData.dialoguePinyin,
-                        dialogueVietnamese: lessonData.dialogueVietnamese
+                        exampleSentenceHanzi: w.exampleHanzi,
+                        exampleSentencePinyin: w.examplePinyin,
+                        exampleSentenceTranslation: w.exampleTranslation,
+                        strokeCount: w.strokeCount
                     )
-                    
-                    for w in lessonData.vocabulary {
-                        let word = HSKWord(
-                            hanzi: w.hanzi,
-                            pinyin: w.pinyin,
-                            sinoVietnamese: w.sinoVietnamese,
-                            vietnameseMeaning: w.vietnameseMeaning,
-                            hskLevel: course.level,
-                            exampleSentenceHanzi: w.exampleHanzi,
-                            exampleSentencePinyin: w.examplePinyin,
-                            exampleSentenceTranslation: w.exampleTranslation,
-                            strokeCount: w.strokeCount
-                        )
-                        word.lesson = lesson
-                        lesson.vocabularyList.append(word)
-                    }
-                    
-                    // Tạo bài tập trắc nghiệm nối từ
-                    if let firstWord = lessonData.vocabulary.first {
-                        let quiz = HSKQuiz(
-                            type: .multipleChoice,
-                            promptText: "Từ '\(firstWord.hanzi)' (\(firstWord.pinyin)) có nghĩa là gì?",
-                            targetHanzi: firstWord.hanzi,
-                            targetPinyin: firstWord.pinyin,
-                            optionsData: [firstWord.vietnameseMeaning, "Trường học", "Ngày mai", "Bác sĩ"],
-                            correctAnswer: firstWord.vietnameseMeaning,
-                            explanation: "\(firstWord.hanzi) mang nghĩa là \(firstWord.vietnameseMeaning)."
-                        )
-                        quiz.lesson = lesson
-                        lesson.quizzes.append(quiz)
-                    }
-                    
-                    context.insert(lesson)
+                    word.nextReviewAt = Date()
+                    word.lesson = lesson
+                    lesson.vocabularyList.append(word)
                 }
+                
+                // Tạo bài tập trắc nghiệm nối từ
+                if let firstWord = lessonData.vocabulary.first {
+                    let quiz = HSKQuiz(
+                        type: .multipleChoice,
+                        promptText: "Từ '\(firstWord.hanzi)' (\(firstWord.pinyin)) có nghĩa là gì?",
+                        targetHanzi: firstWord.hanzi,
+                        targetPinyin: firstWord.pinyin,
+                        optionsData: [firstWord.vietnameseMeaning, "Trường học", "Ngày mai", "Bác sĩ"],
+                        correctAnswer: firstWord.vietnameseMeaning,
+                        explanation: "\(firstWord.hanzi) mang nghĩa là \(firstWord.vietnameseMeaning)."
+                    )
+                    quiz.lesson = lesson
+                    lesson.quizzes.append(quiz)
+                }
+                
+                context.insert(lesson)
             }
         }
         

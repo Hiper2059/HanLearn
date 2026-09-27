@@ -144,7 +144,53 @@ public struct SHZCurriculumDatabase {
                         SHZWordData(hanzi: "贵", pinyin: "guì", sinoVietnamese: "Quý", vietnameseMeaning: "Đắt, quý báu", exampleHanzi: "太贵了！", examplePinyin: "Tài guì le!", exampleTranslation: "Đắt quá!", strokeCount: 9),
                         SHZWordData(hanzi: "便宜", pinyin: "piányi", sinoVietnamese: "Tiện nghi", vietnameseMeaning: "Rẻ, giá cả phải chăng", exampleHanzi: "能便宜一点吗？", examplePinyin: "Néng piányi yìdiǎn ma?", exampleTranslation: "Có thể rẻ hơn một chút không?", strokeCount: 11),
                         SHZWordData(hanzi: "一共", pinyin: "yígòng", sinoVietnamese: "Nhất cộng", vietnameseMeaning: "Tổng cộng", exampleHanzi: "一共一百块。", examplePinyin: "Yígòng yìbǎi kuài.", exampleTranslation: "Tổng cộng 100 tệ.", strokeCount: 7),
-                        SHZWordData(hanzi: "衣服", pinyin: "yīfu", sinoVietnamese: "Y phục", vietnameseMeaning: "Quần áo", exampleHanzi: "新衣服很漂亮。", examplePinyin: "Xīn yīfu hěn piàoliang.", exampleTranslation: "Quần áo mới rất đẹp.", strokeCount: 14)
+                        SHZWordData(hanzi: "衣服", pinyin: "yīfu", sinoVietnamese: "Y phục", vietnameseMeaning: "Quần áo", exampleHanzi: "新衣服很漂亮。", examplePinyin: "Xīn yīfu hěn piàoliang.", exampleTranslation: "Quần áo mới rất đẹp.", strokeCount: 14),
+                        SHZWordData(hanzi: "米饭", pinyin: "mǐfàn", sinoVietnamese: "Mễ phạn", vietnameseMeaning: "Cơm", exampleHanzi: "我想吃米饭。", examplePinyin: "Wǒ xiǎng chī mǐfàn.", exampleTranslation: "Tôi muốn ăn cơm.", strokeCount: 13),
+                        SHZWordData(hanzi: "茶", pinyin: "chá", sinoVietnamese: "Trà", vietnameseMeaning: "Trà, chè", exampleHanzi: "请喝茶。", examplePinyin: "Qǐng hē chá.", exampleTranslation: "Xin mời uống trà.", strokeCount: 9),
+                        SHZWordData(hanzi: "水", pinyin: "shuǐ", sinoVietnamese: "Thủy", vietnameseMeaning: "Nước", exampleHanzi: "多喝水。", examplePinyin: "Duō hē shuǐ.", exampleTranslation: "Uống nhiều nước nhé.", strokeCount: 4),
+                        SHZWordData(hanzi: "杯子", pinyin: "bēizi", sinoVietnamese: "Bôi tử", vietnameseMeaning: "Cái cốc, cái chén", exampleHanzi: "这个杯子很好看。", examplePinyin: "Zhège bēizi hěn hǎokàn.", exampleTranslation: "Cái cốc này rất đẹp.", strokeCount: 11)
+                    ]
+                ),
+                SHZLessonData(
+                    id: "hsk1_b5",
+                    lessonNumber: 5,
+                    title: "Bài 5: 你去哪儿？ (Bạn đi đâu đấy?)",
+                    topic: "Địa điểm, Phương hướng & Di chuyển",
+                    summary: "Hỏi và chỉ đường, diễn đạt các địa điểm công cộng như trường học, bệnh viện, nhà ga.",
+                    grammarExplanation: "1. Động từ 去: 'Chủ ngữ + 去 + Nơi chốn'. Ví dụ: 我去商店 (Tôi đi đến cửa hàng).\n2. Giới từ 在: 'Chủ ngữ + 在 + Nơi chốn + Động từ'. Ví dụ: 我在学校学习 (Tôi học ở trường).\n3. Đại từ nghi vấn 哪儿 (Ở đâu).",
+                    dialogueChinese: "请问，你去哪儿？\n我去商店买东西。你在哪儿工作？\n我在医院工作，我是医生。\n今天星期几？\n今天星期六，明天我们去北京。",
+                    dialoguePinyin: "Qǐngwèn, nǐ qù nǎr?\nWǒ qù shāngdiàn mǎi dōngxi. Nǐ zài nǎr gōngzuò?\nWǒ zài yīyuàn gōngzuò, wǒ shì yīshēng.\nJīntiān xīngqījǐ?\nJīntiān xīngqīliù, míngtiān wǒmen qù Běijīng.",
+                    dialogueVietnamese: "Xin hỏi bạn đi đâu đấy?\nTôi đến cửa hàng mua đồ. Bạn làm việc ở đâu?\nTôi làm việc ở bệnh viện, tôi là bác sĩ.\nHôm nay thứ mấy?\nHôm nay là thứ bảy, ngày mai chúng tôi đi Bắc Kinh.",
+                    vocabulary: [
+                        SHZWordData(hanzi: "去", pinyin: "qù", sinoVietnamese: "Khứ", vietnameseMeaning: "Đi, đi đến", exampleHanzi: "你去哪儿？", examplePinyin: "Nǐ qù nǎr?", exampleTranslation: "Bạn đi đâu đấy?", strokeCount: 5),
+                        SHZWordData(hanzi: "哪儿", pinyin: "nǎr", sinoVietnamese: "Ná nhi", vietnameseMeaning: "Ở đâu, đâu", exampleHanzi: "你在哪儿？", examplePinyin: "Nǐ zài nǎr?", exampleTranslation: "Bạn ở đâu?", strokeCount: 11),
+                        SHZWordData(hanzi: "商店", pinyin: "shāngdiàn", sinoVietnamese: "Thương điếm", vietnameseMeaning: "Cửa hàng, tiệm", exampleHanzi: "商店里人很多。", examplePinyin: "Shāngdiàn lǐ rén hěn duō.", exampleTranslation: "Trong cửa hàng rất đông người.", strokeCount: 19),
+                        SHZWordData(hanzi: "医院", pinyin: "yīyuàn", sinoVietnamese: "Y viện", vietnameseMeaning: "Bệnh viện", exampleHanzi: "他在医院工作。", examplePinyin: "Tā zài yīyuàn gōngzuò.", exampleTranslation: "Anh ấy làm việc ở bệnh viện.", strokeCount: 16),
+                        SHZWordData(hanzi: "北京", pinyin: "Běijīng", sinoVietnamese: "Bắc Kinh", vietnameseMeaning: "Bắc Kinh (Thủ đô)", exampleHanzi: "我爱北京。", examplePinyin: "Wǒ ài Běijīng.", exampleTranslation: "Tôi yêu Bắc Kinh.", strokeCount: 13),
+                        SHZWordData(hanzi: "星期", pinyin: "xīngqī", sinoVietnamese: "Tinh kỳ", vietnameseMeaning: "Tuần, thứ", exampleHanzi: "今天星期日。", examplePinyin: "Jīntiān xīngqīrì.", exampleTranslation: "Hôm nay là chủ nhật.", strokeCount: 21),
+                        SHZWordData(hanzi: "明天", pinyin: "míngtiān", sinoVietnamese: "Minh thiên", vietnameseMeaning: "Ngày mai", exampleHanzi: "明天见！", examplePinyin: "Míngtiān jiàn!", exampleTranslation: "Ngày mai gặp nhé!", strokeCount: 12),
+                        SHZWordData(hanzi: "昨天", pinyin: "zuótiān", sinoVietnamese: "Tạc thiên", vietnameseMeaning: "Hôm qua", exampleHanzi: "昨天很冷。", examplePinyin: "Zuótiān hěn lěng.", exampleTranslation: "Hôm qua rất lạnh.", strokeCount: 13)
+                    ]
+                ),
+                SHZLessonData(
+                    id: "hsk1_b6",
+                    lessonNumber: 6,
+                    title: "Bài 6: 你会说汉语吗？ (Bạn biết nói tiếng Trung không?)",
+                    topic: "Kỹ năng, Đồ ăn & Cuộc sống",
+                    summary: "Dùng trợ động từ năng nguyện biểu thị kỹ năng thông qua học tập.",
+                    grammarExplanation: "1. Trợ động từ 会: Biểu thị biết làm gì qua rèn luyện: 'Chủ ngữ + 会 + Động từ'.\n2. Đại từ nghi vấn 怎么样 (Như thế nào).\n3. Câu chữ 很: Đứng trước hình dung từ biểu thị đặc điểm.",
+                    dialogueChinese: "你会说汉语吗？\n我会说一点儿汉语。\n你会写汉字吗？\n我会写，这个字怎么读？\n中国菜好吃吗？\n很好吃，我很喜欢吃中国菜！",
+                    dialoguePinyin: "Nǐ huì shuō Hànyǔ ma?\nWǒ huì shuō yìdiǎnr Hànyǔ.\nNǐ huì xiě hànzì ma?\nWǒ huì xiě, zhège zì zěnme dú?\nZhōngguó cài hǎochī ma?\nHěn hǎochī, wǒ hěn xǐhuan chī Zhōngguó cài!",
+                    dialogueVietnamese: "Bạn biết nói tiếng Trung không?\nTôi biết nói một chút tiếng Trung.\nBạn biết viết chữ Hán không?\nTôi biết viết, chữ này đọc thế nào?\nMón ăn Trung Quốc có ngon không?\nRất ngon, tôi rất thích ăn món Trung Quốc!",
+                    vocabulary: [
+                        SHZWordData(hanzi: "会", pinyin: "huì", sinoVietnamese: "Hội", vietnameseMeaning: "Biết (qua học tập), có thể", exampleHanzi: "我会游泳。", examplePinyin: "Wǒ huì yóuyǒng.", exampleTranslation: "Tôi biết bơi.", strokeCount: 6),
+                        SHZWordData(hanzi: "说", pinyin: "shuō", sinoVietnamese: "Thuyết", vietnameseMeaning: "Nói", exampleHanzi: "请慢慢说。", examplePinyin: "Qǐng mànmàn shuō.", exampleTranslation: "Xin hãy nói chậm một chút.", strokeCount: 9),
+                        SHZWordData(hanzi: "写", pinyin: "xiě", sinoVietnamese: "Tả", vietnameseMeaning: "Viết", exampleHanzi: "写汉字很有意思。", examplePinyin: "Xiě hànzì hěn yǒuyìsi.", exampleTranslation: "Viết chữ Hán rất thú vị.", strokeCount: 5),
+                        SHZWordData(hanzi: "读", pinyin: "dú", sinoVietnamese: "Độc", vietnameseMeaning: "Đọc", exampleHanzi: "请跟我读。", examplePinyin: "Qǐng gēn wǒ dú.", exampleTranslation: "Xin đọc theo tôi.", strokeCount: 10),
+                        SHZWordData(hanzi: "菜", pinyin: "cài", sinoVietnamese: "Thái", vietnameseMeaning: "Món ăn, rau", exampleHanzi: "中国菜很好吃。", examplePinyin: "Zhōngguó cài hěn hǎochī.", exampleTranslation: "Món Trung Quốc rất ngon.", strokeCount: 11),
+                        SHZWordData(hanzi: "好吃", pinyin: "hǎochī", sinoVietnamese: "Hảo ngật", vietnameseMeaning: "Ngon (ăn ngon)", exampleHanzi: "这个很好吃。", examplePinyin: "Zhège hěn hǎochī.", exampleTranslation: "Cái này ngon lắm.", strokeCount: 12),
+                        SHZWordData(hanzi: "汉字", pinyin: "hànzì", sinoVietnamese: "Hán tự", vietnameseMeaning: "Chữ Hán", exampleHanzi: "汉字很美。", examplePinyin: "Hànzì hěn měi.", exampleTranslation: "Chữ Hán rất đẹp.", strokeCount: 11),
+                        SHZWordData(hanzi: "怎么", pinyin: "zěnme", sinoVietnamese: "Chẩm ma", vietnameseMeaning: "Như thế nào, sao", exampleHanzi: "怎么去学校？", examplePinyin: "Zěnme qù xuéxiào?", exampleTranslation: "Đi đến trường thế nào?", strokeCount: 8)
                     ]
                 )
             ]
@@ -173,7 +219,28 @@ public struct SHZCurriculumDatabase {
                         SHZWordData(hanzi: "打算", pinyin: "dǎsuàn", sinoVietnamese: "Đả toán", vietnameseMeaning: "Dự định, kế hoạch", exampleHanzi: "你有什么打算？", examplePinyin: "Nǐ yǒu shénme dǎsuàn?", exampleTranslation: "Bạn có dự định gì?", strokeCount: 12),
                         SHZWordData(hanzi: "踢足球", pinyin: "tī zúqiú", sinoVietnamese: "Thích túc cầu", vietnameseMeaning: "Đá bóng", exampleHanzi: "我们一起踢足球吧。", examplePinyin: "Wǒmen yìqǐ tī zúqiú ba.", exampleTranslation: "Chúng ta cùng nhau đá bóng nhé.", strokeCount: 29),
                         SHZWordData(hanzi: "电影", pinyin: "diànyǐng", sinoVietnamese: "Điện ảnh", vietnameseMeaning: "Phim, điện ảnh", exampleHanzi: "这部电影很好看。", examplePinyin: "Zhè bù diànyǐng hěn hǎokàn.", exampleTranslation: "Bộ phim này rất hay.", strokeCount: 14),
-                        SHZWordData(hanzi: "运动", pinyin: "yùndòng", sinoVietnamese: "Vận động", vietnameseMeaning: "Thể thao, vận động", exampleHanzi: "每天运动身体好。", examplePinyin: "Měitiān yùndòng shēntǐ hǎo.", exampleTranslation: "Vận động mỗi ngày tốt cho sức khỏe.", strokeCount: 16)
+                        SHZWordData(hanzi: "运动", pinyin: "yùndòng", sinoVietnamese: "Vận động", vietnameseMeaning: "Thể thao, vận động", exampleHanzi: "每天运动身体好。", examplePinyin: "Měitiān yùndòng shēntǐ hǎo.", exampleTranslation: "Vận động mỗi ngày tốt cho sức khỏe.", strokeCount: 16),
+                        SHZWordData(hanzi: "跑步", pinyin: "pǎobù", sinoVietnamese: "Bào bộ", vietnameseMeaning: "Chạy bộ", exampleHanzi: "我每天早上跑步。", examplePinyin: "Wǒ měitiān zǎoshang pǎobù.", exampleTranslation: "Mỗi sáng tôi đều chạy bộ.", strokeCount: 19),
+                        SHZWordData(hanzi: "游泳", pinyin: "yóuyǒng", sinoVietnamese: "Du vịnh", vietnameseMeaning: "Bơi lội", exampleHanzi: "夏天去游泳。", examplePinyin: "Xiàtiān qù yóuyǒng.", exampleTranslation: "Mùa hè đi bơi lội.", strokeCount: 21)
+                    ]
+                ),
+                SHZLessonData(
+                    id: "hsk2_b6",
+                    lessonNumber: 6,
+                    title: "Bài 6: 怎么去机场？ (Làm thế nào để đến sân bay?)",
+                    topic: "Phương tiện giao thông, Khoảng cách & Vị trí",
+                    summary: "Sử dụng các loại phương tiện (xe bus, tàu điện ngầm, taxi) và diễn đạt xa gần bằng giới từ 离.",
+                    grammarExplanation: "1. Giới từ 离: 'Địa điểm A + 离 + Địa điểm B + 很远/很近'.\n2. Cấu trúc 坐 / 开: 坐出租车 (Đi taxi), 坐飞机 (Đi máy bay), 开车 (Lái xe).\n3. 往 + Phương hướng + Động từ: 往前走 (Đi về phía trước).",
+                    dialogueChinese: "请问，这里离机场远吗？\n不太远，大概二十公里。\n怎么去最方便？\n坐地铁或者坐出租车都很方便。\n坐出租车要多长时间？\n大概半个小时就能到。",
+                    dialoguePinyin: "Qǐngwèn, zhèlǐ lí jīchǎng yuǎn ma?\nBú tài yuǎn, dàgài èrshí gōnglǐ.\nZěnme qù zuì fāngbiàn?\nZuò dìtiě huòzhě zuò chūzūchē dōu hěn fāngbiàn.\nZuò chūzūchē yào duō cháng shíjiān?\nDàgài bàn gè xiǎoshí jiù néng dào.",
+                    dialogueVietnamese: "Xin hỏi, ở đây cách sân bay có xa không?\nKhông xa lắm, khoảng 20 cây số.\nĐi thế nào thuận tiện nhất?\nĐi tàu điện ngầm hoặc đi taxi đều rất thuận tiện.\nĐi taxi mất bao lâu?\nKhoảng nửa tiếng là có thể đến nơi.",
+                    vocabulary: [
+                        SHZWordData(hanzi: "机场", pinyin: "jīchǎng", sinoVietnamese: "Cơ trường", vietnameseMeaning: "Sân bay, phi trường", exampleHanzi: "我在机场等你。", examplePinyin: "Wǒ zài jīchǎng děng nǐ.", exampleTranslation: "Tôi đợi bạn ở sân bay.", strokeCount: 12),
+                        SHZWordData(hanzi: "飞机", pinyin: "fēijī", sinoVietnamese: "Phi cơ", vietnameseMeaning: "Máy bay", exampleHanzi: "坐飞机去上海。", examplePinyin: "Zuò fēijī qù Shànghǎi.", exampleTranslation: "Đi máy bay đến Thượng Hải.", strokeCount: 9),
+                        SHZWordData(hanzi: "出租车", pinyin: "chūzūchē", sinoVietnamese: "Xuất tô xa", vietnameseMeaning: "Xe taxi", exampleHanzi: "我们叫出租车吧。", examplePinyin: "Wǒmen jiào chūzūchē ba.", exampleTranslation: "Chúng ta gọi taxi nhé.", strokeCount: 19),
+                        SHZWordData(hanzi: "地铁", pinyin: "dìtiě", sinoVietnamese: "Địa thiết", vietnameseMeaning: "Tàu điện ngầm", exampleHanzi: "坐地铁很快。", examplePinyin: "Zuò dìtiě hěn kuài.", exampleTranslation: "Đi tàu điện ngầm rất nhanh.", strokeCount: 16),
+                        SHZWordData(hanzi: "远", pinyin: "yuǎn", sinoVietnamese: "Viễn", vietnameseMeaning: "Xa", exampleHanzi: "学校离家很远。", examplePinyin: "Xuéxiào lí jiā hěn yuǎn.", exampleTranslation: "Trường học cách nhà rất xa.", strokeCount: 7),
+                        SHZWordData(hanzi: "近", pinyin: "jìn", sinoVietnamese: "Cận", vietnameseMeaning: "Gần", exampleHanzi: "我家离公司很近。", examplePinyin: "Wǒ jiā lí gōngsī hěn jìn.", exampleTranslation: "Nhà tôi cách công ty rất gần.", strokeCount: 7)
                     ]
                 ),
                 SHZLessonData(
@@ -190,10 +257,53 @@ public struct SHZCurriculumDatabase {
                         SHZWordData(hanzi: "比", pinyin: "bǐ", sinoVietnamese: "Tỷ", vietnameseMeaning: "So với, hơn (so sánh)", exampleHanzi: "他比我大。", examplePinyin: "Tā bǐ wǒ dà.", exampleTranslation: "Anh ấy lớn hơn tôi.", strokeCount: 4),
                         SHZWordData(hanzi: "天气", pinyin: "tiānqì", sinoVietnamese: "Thiên khí", vietnameseMeaning: "Thời tiết", exampleHanzi: "今天天气真好！", examplePinyin: "Jīntiān tiānqì zhēn hǎo!", exampleTranslation: "Thời tiết hôm nay thật đẹp!", strokeCount: 10),
                         SHZWordData(hanzi: "冷", pinyin: "lěng", sinoVietnamese: "Lãnh", vietnameseMeaning: "Lạnh", exampleHanzi: "冬天很冷。", examplePinyin: "Dōngtiān hěn lěng.", exampleTranslation: "Mùa đông rất lạnh.", strokeCount: 7),
-                        SHZWordData(hanzi: "下雨", pinyin: "xiàyǔ", sinoVietnamese: "Hạ vũ", vietnameseMeaning: "Mưa, trời mưa", exampleHanzi: "外面下雨了。", examplePinyin: "Wàimiàn xiàyǔ le.", exampleTranslation: "Bên ngoài trời mưa rồi.", strokeCount: 11)
+                        SHZWordData(hanzi: "下雨", pinyin: "xiàyǔ", sinoVietnamese: "Hạ vũ", vietnameseMeaning: "Mưa, trời mưa", exampleHanzi: "外面下雨了。", examplePinyin: "Wàimiàn xiàyǔ le.", exampleTranslation: "Bên ngoài trời mưa rồi.", strokeCount: 11),
+                        SHZWordData(hanzi: "晴天", pinyin: "qíngtiān", sinoVietnamese: "Tình thiên", vietnameseMeaning: "Trời nắng, trời quang", exampleHanzi: "明天是晴天。", examplePinyin: "Míngtiān shì qíngtiān.", exampleTranslation: "Ngày mai trời nắng đẹp.", strokeCount: 16)
+                    ]
+                )
+            ]
+        ),
+        
+        // MARK: - HSK 3: 发展汉语 · 初级综合 (Bài 1 -> Bài 4)
+        SHZCourseData(
+            level: 3,
+            courseName: "Khóa học HSK 3",
+            textbook: "发展汉语 · 初级综合",
+            totalLessons: "Bài 1 → Bài 4 · 72 tiết",
+            vocabTarget: "Khoảng 1.000 từ vựng tích lũy",
+            grammarPointsCount: 78,
+            lessons: [
+                SHZLessonData(
+                    id: "hsk3_b1",
+                    lessonNumber: 1,
+                    title: "Bài 1: 我的旅行计划 (Kế hoạch du lịch của tôi)",
+                    topic: "Du lịch, Chuẩn bị hành lý & Đặt phòng khách sạn",
+                    summary: "Trình bày kế hoạch du lịch chi tiết, dùng câu liên từ 虽然...但是 và cấu trúc 把.",
+                    grammarExplanation: "1. Liên từ 虽然...但是: Tuy... nhưng... Ví dụ: 虽然很累，但是很开心.\n2. Cấu trúc câu chữ 把: Biểu thị sự xử lý đối với sự vật.",
+                    dialogueChinese: "放假了，你打算去哪儿旅游？\n我打算去云南旅游。我已经把机票和宾馆都预订好了。\n你一个人去吗？\n我和两个同事一起去，虽然路途很远，但是风景特别美。\n祝你旅途愉快！\n谢谢！",
+                    dialoguePinyin: "Fàngjià le, nǐ dǎsuàn qù nǎr lǚyóu?\nWǒ dǎsuàn qù Yúnnán lǚyóu. Wǒ yǐjīng bǎ jīpiào hé bīnguǎn dōu yùdìng hǎo le.\nNǐ yí gè rén qù ma?\nWǒ hé liǎng gè tóngshì yìqǐ qù, suīrán lùtú hěn yuǎn, dànshì fēngjǐng tèbié měi.\nZhù nǐ lǚtú yúkuài!\nXièxie!",
+                    dialogueVietnamese: "Nghỉ lễ rồi, bạn định đi đâu du lịch?\nTôi dự định đi du lịch Vân Nam. Tôi đã đặt xong vé máy bay và khách sạn rồi.\nBạn đi một mình à?\nTôi đi cùng hai đồng nghiệp, tuy đường xá xa xôi nhưng phong cảnh đặc biệt đẹp.\nChúc bạn chuyến đi vui vẻ nhé!\nCảm ơn bạn!",
+                    vocabulary: [
+                        SHZWordData(hanzi: "旅游", pinyin: "lǚyóu", sinoVietnamese: "Lữ du", vietnameseMeaning: "Du lịch", exampleHanzi: "我想去中国旅游。", examplePinyin: "Wǒ xiǎng qù Zhōngguó lǚyóu.", exampleTranslation: "Tôi muốn đi du lịch Trung Quốc.", strokeCount: 20),
+                        SHZWordData(hanzi: "宾馆", pinyin: "bīnguǎn", sinoVietnamese: "Tân quán", vietnameseMeaning: "Khách sạn, nhà khách", exampleHanzi: "这家宾馆环境很好。", examplePinyin: "Zhè jiā bīnguǎn huánjìng hěn hǎo.", exampleTranslation: "Môi trường khách sạn này rất tốt.", strokeCount: 18),
+                        SHZWordData(hanzi: "虽然", pinyin: "suīrán", sinoVietnamese: "Tuy nhiên", vietnameseMeaning: "Tuy rằng, mặc dù", exampleHanzi: "虽然很难，但是很有趣。", examplePinyin: "Suīrán hěn nán, dànshì hěn yǒuqù.", exampleTranslation: "Tuy khó nhưng rất thú vị.", strokeCount: 16),
+                        SHZWordData(hanzi: "但是", pinyin: "dànshì", sinoVietnamese: "Đãn thị", vietnameseMeaning: "Nhưng, nhưng mà", exampleHanzi: "我想去，但是没有时间。", examplePinyin: "Wǒ xiǎng qù, dànshì méiyǒu shíjiān.", exampleTranslation: "Tôi muốn đi, nhưng không có thời gian.", strokeCount: 14),
+                        SHZWordData(hanzi: "护照", pinyin: "hùzhào", sinoVietnamese: "Hộ chiếu", vietnameseMeaning: "Hộ chiếu", exampleHanzi: "别忘了带护照。", examplePinyin: "Bié wàng le dài hùzhào.", exampleTranslation: "Đừng quên mang theo hộ chiếu.", strokeCount: 22),
+                        SHZWordData(hanzi: "行李", pinyin: "xíngli", sinoVietnamese: "Hành lý", vietnameseMeaning: "Hành lý", exampleHanzi: "行李收拾好了吗？", examplePinyin: "Xíngli shōushi hǎo le ma?", exampleTranslation: "Hành lý thu dọn xong chưa?", strokeCount: 13)
                     ]
                 )
             ]
         )
     ]
+    
+    /// Toàn bộ danh sách từ vựng từ tất cả các khóa học
+    public static var allWordsList: [SHZWordData] {
+        var list: [SHZWordData] = []
+        for course in allCourses {
+            for lesson in course.lessons {
+                list.append(contentsOf: lesson.vocabulary)
+            }
+        }
+        return list
+    }
 }

@@ -81,7 +81,7 @@ public struct HomeView: View {
                         taskListSection
                     }
                     .padding(.horizontal, 16)
-                    .padding(.bottom, 40)
+                    .padding(.bottom, 120)
                 }
             }
             .navigationTitle("Hôm nay")
@@ -276,6 +276,7 @@ public struct HomeView: View {
                             .font(.system(size: 11))
                             .foregroundColor(.white.opacity(0.6))
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(14)
                     .background(Color(red: 0.10, green: 0.13, blue: 0.16))
                     .cornerRadius(14)
@@ -309,6 +310,7 @@ public struct HomeView: View {
                             .font(.system(size: 11))
                             .foregroundColor(.white.opacity(0.6))
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(14)
                     .background(Color(red: 0.14, green: 0.10, blue: 0.12))
                     .cornerRadius(14)

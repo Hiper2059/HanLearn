@@ -22,10 +22,10 @@ public final class SoundManager {
     private func configureAudioSession() {
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+            try session.setCategory(.playAndRecord, mode: .spokenAudio, options: [.defaultToSpeaker, .allowBluetooth])
             try session.setActive(true, options: .notifyOthersOnDeactivation)
         } catch {
-            print("Không thể cấu hình AVAudioSession .playback: \(error)")
+            print("Không thể cấu hình AVAudioSession .playAndRecord: \(error)")
         }
     }
     
