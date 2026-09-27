@@ -1,4 +1,4 @@
-name: iOS Swift CI & Package App
+name: iOS Swift CI & Build IPA
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build & Package Simulator App
+    name: Build HanLearn IPA for iPhone
     runs-on: macos-14
 
     steps:
@@ -34,18 +34,27 @@ jobs:
       - name: Generate Xcode Project
         run: xcodegen generate
 
-      - name: Build HanLearn App for iOS Simulator
+      - name: Archive HanLearn for Device (ARM64)
         run: |
-          xcodebuild build \
+          xcodebuild archive \
             -project HanLearn.xcodeproj \
             -scheme HanLearn \
-            -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath build_output \
-            CODE_SIGNING_ALLOWED=NO
+            -destination 'generic/platform=iOS' \
+            -archivePath build/HanLearn.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
 
-      - name: Upload Simulator App (For Appetize.io)
+      - name: Package Payload into HanLearn.ipa
+        run: |
+          mkdir -p Payload
+          cp -r build/HanLearn.xcarchive/Products/Applications/HanLearn.app Payload/
+          zip -r HanLearn.ipa Payload
+          ls -lh HanLearn.ipa
+
+      - name: Upload IPA for Sideloadly / AltStore
         uses: actions/upload-artifact@v4
         with:
-          name: HanLearn-Simulator
-          path: build_output/Build/Products/Debug-iphonesimulator/HanLearn.app
+          name: HanLearn-IPA
+          path: HanLearn.ipa
           retention-days: 7
