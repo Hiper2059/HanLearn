@@ -49,6 +49,17 @@ jobs:
         run: |
           mkdir -p Payload
           cp -r build/HanLearn.xcarchive/Products/Applications/HanLearn.app Payload/
+          
+          TARGET_PLIST="Payload/HanLearn.app/Info.plist"
+          echo "Injecting required TCC privacy permissions into $TARGET_PLIST..."
+          /usr/libexec/PlistBuddy -c "Set :NSMicrophoneUsageDescription 'HanLearn cần quyền microphone để luyện phát âm tiếng Trung và chấm điểm thanh điệu.'" "$TARGET_PLIST" || /usr/libexec/PlistBuddy -c "Add :NSMicrophoneUsageDescription string 'HanLearn cần quyền microphone để luyện phát âm tiếng Trung và chấm điểm thanh điệu.'" "$TARGET_PLIST"
+          /usr/libexec/PlistBuddy -c "Set :NSSpeechRecognitionUsageDescription 'HanLearn cần quyền nhận diện giọng nói để phân tích phát âm của bạn.'" "$TARGET_PLIST" || /usr/libexec/PlistBuddy -c "Add :NSSpeechRecognitionUsageDescription string 'HanLearn cần quyền nhận diện giọng nói để phân tích phát âm của bạn.'" "$TARGET_PLIST"
+          /usr/libexec/PlistBuddy -c "Set :UIRequiresFullScreen true" "$TARGET_PLIST" || /usr/libexec/PlistBuddy -c "Add :UIRequiresFullScreen bool true" "$TARGET_PLIST"
+          /usr/libexec/PlistBuddy -c "Set :UILaunchStoryboardName 'LaunchScreen'" "$TARGET_PLIST" || /usr/libexec/PlistBuddy -c "Add :UILaunchStoryboardName string 'LaunchScreen'" "$TARGET_PLIST"
+          
+          echo "=== VERIFYING FINAL INFO.PLIST IN IPA ==="
+          plutil -p "$TARGET_PLIST"
+          
           zip -r HanLearn.ipa Payload
           ls -lh HanLearn.ipa
 

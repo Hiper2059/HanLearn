@@ -319,7 +319,7 @@ public struct OnboardingView: View {
         
         HapticManager.shared.answerCorrect()
         
-        // Request notification permission (non-blocking)
+        // Request notification & microphone permissions (non-blocking)
         Task {
             let granted = await NotificationService.shared.requestPermission()
             if granted {
@@ -333,6 +333,8 @@ public struct OnboardingView: View {
                     try? modelContext.save()
                 }
             }
+            
+            _ = await AudioVoiceEvaluatorService.shared.requestPermissions()
         }
     }
 }

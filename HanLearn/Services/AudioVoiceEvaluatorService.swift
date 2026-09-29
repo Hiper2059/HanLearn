@@ -115,25 +115,23 @@ public final class AudioVoiceEvaluatorService: NSObject, ObservableObject, AVAud
             return true
         }
         
-        if session.recordPermission == .denied {
-            updatePermissionStatus()
-            AppLogger.shared.warning(tag: "Audio", message: "Micro đã bị từ chối trước đó. Cần mở Cài đặt iPhone.")
-            return false
-        }
-        
-        AppLogger.shared.info(tag: "Audio", message: "Đang yêu cầu quyền Micro lần đầu...")
+        AppLogger.shared.info(tag: "Audio", message: "Đang yêu cầu quyền Micro...")
         
         let audioAuth: Bool
         if #available(iOS 17.0, *) {
             audioAuth = await withCheckedContinuation { continuation in
                 AVAudioApplication.requestRecordPermission { granted in
-                    continuation.resume(returning: granted)
+                    DispatchQueue.main.async {
+                        continuation.resume(returning: granted)
+                    }
                 }
             }
         } else {
             audioAuth = await withCheckedContinuation { continuation in
                 AVAudioSession.sharedInstance().requestRecordPermission { granted in
-                    continuation.resume(returning: granted)
+                    DispatchQueue.main.async {
+                        continuation.resume(returning: granted)
+                    }
                 }
             }
         }

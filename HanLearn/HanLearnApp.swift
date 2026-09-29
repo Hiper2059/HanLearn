@@ -192,5 +192,10 @@ struct MainTabView: View {
                 .tag(5)
         }
         .tint(HanTheme.jadeGreen)
+        .onAppear {
+            Task { @MainActor in
+                _ = await AudioVoiceEvaluatorService.shared.requestPermissions()
+            }
+        }
     }
 }

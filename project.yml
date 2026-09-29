@@ -20,10 +20,19 @@ targets:
       - path: HanLearn
     info:
       path: HanLearn/Info.plist
+      properties:
+        NSMicrophoneUsageDescription: "HanLearn cần quyền microphone để luyện phát âm tiếng Trung và chấm điểm thanh điệu."
+        NSSpeechRecognitionUsageDescription: "HanLearn cần quyền nhận diện giọng nói để phân tích phát âm của bạn."
+        UILaunchStoryboardName: LaunchScreen
+        UIRequiresFullScreen: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.hanlearn.app
       GENERATE_INFOPLIST_FILE: NO
       INFOPLIST_FILE: HanLearn/Info.plist
+      INFOPLIST_KEY_NSMicrophoneUsageDescription: "HanLearn cần quyền microphone để luyện phát âm tiếng Trung và chấm điểm thanh điệu."
+      INFOPLIST_KEY_NSSpeechRecognitionUsageDescription: "HanLearn cần quyền nhận diện giọng nói để phân tích phát âm của bạn."
       INFOPLIST_KEY_UILaunchStoryboardName: LaunchScreen
       INFOPLIST_KEY_UIRequiresFullScreen: YES
 
